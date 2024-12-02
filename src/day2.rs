@@ -99,6 +99,6 @@ mod tests {
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 
-        assert_eq!(part_2(&contents), 670);
+        assert_eq!(part_2(&contents), 700);
     }
 }
