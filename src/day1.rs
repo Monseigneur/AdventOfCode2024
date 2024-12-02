@@ -13,7 +13,7 @@ fn part_1(contents: &str) -> usize {
     let mut right = vec![];
 
     for line in contents.lines() {
-        let pieces: Vec<&str>= line.split_ascii_whitespace().collect();
+        let pieces: Vec<&str> = line.split_ascii_whitespace().collect();
 
         left.push(pieces[0].parse::<usize>().unwrap());
         right.push(pieces[1].parse::<usize>().unwrap());
@@ -22,15 +22,11 @@ fn part_1(contents: &str) -> usize {
     left.sort();
     right.sort();
 
-    let mut total = 0;
-
-    for i in 0..left.len() {
-        let delta = left[i].abs_diff(right[i]);
-
-        total += delta;
-    }
-
-    total
+    left.into_iter()
+        .zip(right.into_iter())
+        .fold(0, |acc, (left_val, right_val)| {
+            acc + left_val.abs_diff(right_val)
+        })
 }
 
 fn part_2(contents: &str) -> usize {
@@ -44,18 +40,14 @@ fn part_2(contents: &str) -> usize {
 
         let right_val = pieces[1].parse::<usize>().unwrap();
 
-        right.entry(right_val).and_modify(|rv| *rv += 1).or_insert(1);
+        right
+            .entry(right_val)
+            .and_modify(|rv| *rv += 1)
+            .or_insert(1);
     }
 
-    let mut simularity_score = 0;
-
-    for left_val in left {
-        let right_count = right.get(&left_val).unwrap_or(&0);
-
-        simularity_score += left_val * right_count;
-    }
-
-    simularity_score
+    left.into_iter()
+        .fold(0, |acc, val| acc + val * right.get(&val).unwrap_or(&0))
 }
 
 #[cfg(test)]
@@ -63,16 +55,30 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_part_1() {
+    fn test_example_part_1() {
         let contents = utilities::read_file_data(DAY, "example.txt");
 
         assert_eq!(part_1(&contents), 11);
     }
 
     #[test]
-    fn test_part_2() {
+    fn test_input_part_1() {
+        let contents = utilities::read_file_data(DAY, "input.txt");
+
+        assert_eq!(part_1(&contents), 2176849);
+    }
+
+    #[test]
+    fn test_example_part_2() {
         let contents = utilities::read_file_data(DAY, "example.txt");
 
         assert_eq!(part_2(&contents), 31);
+    }
+
+    #[test]
+    fn test_input_part_2() {
+        let contents = utilities::read_file_data(DAY, "input.txt");
+
+        assert_eq!(part_2(&contents), 23384288);
     }
 }
