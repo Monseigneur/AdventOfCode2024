@@ -19,15 +19,14 @@ pub fn read_file_data(day: usize, file_name: &str) -> String
     fs::read_to_string(file_path).unwrap()
 }
 
-pub fn run_puzzle<A, B, F, G>(day: usize, use_input: bool, f1: F, f2: G)
+pub fn run_puzzle<A, B, F, G>(day: usize, f1: F, f2: G)
 where
     F: Fn(&str) -> A,
     G: Fn(&str) -> B,
     A: std::fmt::Display,
     B: std::fmt::Display,
 {
-    let file_name = if use_input { "input.txt" } else { "example.txt" };
-    let contents = read_file_data(day, file_name);
+    let contents = read_file_data(day, "input.txt");
 
     let part_1 = instrument(f1, &contents);
     let part_2 = instrument(f2, &contents);
