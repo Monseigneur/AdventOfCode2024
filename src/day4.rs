@@ -50,14 +50,19 @@ fn count_columns(grid: &Grid) -> usize {
 fn count_diagonals_bl_tr(grid: &Grid) -> usize {
     let mut diagonals = vec![String::new(); grid.len() + grid[0].len() - 1];
 
+    // rows = 4, cols = 6 -> vec size = 9, indexes 0-8
+    // .012345
+    // 0ABCDEF
+    // 1BCDEFG
+    // 2CDEFGH
+    // 3DEFGHI
+    //
+    // diagonal index = row + col
+
     for row in (0..grid.len()).rev() {
         for col in 0..grid[0].len() {
             diagonals[row + col].push(grid[row][col]);
         }
-    }
-
-    for (i, d) in diagonals.iter().enumerate() {
-        println!("{i} -> {d}");
     }
 
     count_instances(&diagonals)
@@ -66,16 +71,21 @@ fn count_diagonals_bl_tr(grid: &Grid) -> usize {
 fn count_diagonals_tl_br(grid: &Grid) -> usize {
     let mut diagonals = vec![String::new(); grid.len() + grid[0].len() - 1];
 
+    // rows = 4, cols = 6 -> vec size = 9, indexes 0-8
+    // .012345
+    // 0FEDCBA
+    // 1GFEDCB
+    // 2HGFEDC
+    // 3IHGFED
+    //
+    // diagonal index = num_cols - 1 - col + row
+
     let num_cols = grid[0].len();
 
     for row in (0..grid.len()).rev() {
         for col in (0..grid[0].len()).rev() {
             diagonals[num_cols - 1 - col + row].push(grid[row][col]);
         }
-    }
-
-    for (i, d) in diagonals.iter().enumerate() {
-        println!("tlbr {i} -> {d}");
     }
 
     count_instances(&diagonals)
@@ -86,7 +96,7 @@ fn count_instances(lines: &Vec<String>) -> usize {
 
     let mut count = 0;
 
-    for (idx, line) in lines.iter().enumerate() {
+    for line in lines.iter() {
         let mut line_count = 0;
 
         let mut cursor = &line[..];
@@ -111,7 +121,33 @@ fn count_instances(lines: &Vec<String>) -> usize {
 }
 
 fn part_2(contents: &str) -> usize {
-    0
+    // Find an 'X' of MAS
+    let grid = parse_grid(contents);
+
+    let mut count = 0;
+
+    for row in 1..(grid.len() - 1) {
+        for col in 1..(grid[0].len() - 1) {
+            if grid[row][col] != 'A' {
+                continue;
+            }
+
+            let tl = grid[row - 1][col - 1];
+            let tr = grid[row - 1][col + 1];
+            let bl = grid[row + 1][col - 1];
+            let br = grid[row + 1][col + 1];
+
+            if check_pair(tl, br) && check_pair(bl, tr) {
+                count += 1;
+            }
+        }
+    }
+
+    count
+}
+
+fn check_pair(first: char, second: char) -> bool {
+    (first == 'M' && second == 'S') || (first == 'S' && second == 'M')
 }
 
 #[cfg(test)]
@@ -136,13 +172,13 @@ mod tests {
     fn test_example_part_2() {
         let contents = utilities::read_file_data(DAY, "example.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 9);
     }
 
     #[test]
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 1985);
     }
 }
