@@ -66,7 +66,7 @@ fn part_2(contents: &str) -> usize {
     let mut token_offsets = vec![
         cursor.find(MUL_PREFIX),
         cursor.find(DO_TOKEN),
-        cursor.find(DONT_TOKEN)
+        cursor.find(DONT_TOKEN),
     ];
 
     let mut mul_enabled = true;
@@ -88,16 +88,16 @@ fn part_2(contents: &str) -> usize {
                 }
 
                 next_start + mul_adjustment
-            },
+            }
             1 => {
                 mul_enabled = true;
                 DO_TOKEN.len()
-            },
+            }
             2 => {
                 mul_enabled = false;
                 DONT_TOKEN.len()
-            },
-            _ => panic!("Illegal value for idx {idx}")
+            }
+            _ => panic!("Illegal value for idx {idx}"),
         };
 
         // Clear out the "consumed" token.
@@ -119,7 +119,7 @@ fn part_2(contents: &str) -> usize {
             0 => cursor.find(MUL_PREFIX),
             1 => cursor.find(DO_TOKEN),
             2 => cursor.find(DONT_TOKEN),
-            _ => panic!("Illegal value for idx {idx}")
+            _ => panic!("Illegal value for idx {idx}"),
         };
     }
 
