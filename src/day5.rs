@@ -72,8 +72,7 @@ fn validate_updates(update: &Vec<usize>, mapping: &Mapping) -> Option<usize> {
     for page in update {
         // Just need to check that this page is after all pages I have already seen.
         if let Some(pages_after) = mapping.get(page) {
-            if seen_pages.intersection(&pages_after).count() != 0
-            {
+            if seen_pages.intersection(&pages_after).count() != 0 {
                 return None;
             }
         }
@@ -111,11 +110,14 @@ fn validate_updates_v2(update: &Vec<usize>, mapping: &Mapping) -> Option<usize> 
 
     for page in update {
         if let Some(pages_after) = mapping.get(page) {
-            let intersection = seen_pages.intersection(&pages_after).collect::<HashSet<_>>();
+            let intersection = seen_pages
+                .intersection(&pages_after)
+                .collect::<HashSet<_>>();
 
             if intersection.is_empty() {
                 adjusted.push(*page);
-            } else if let Some(index) = adjusted.iter().position(|item| intersection.contains(item)) {
+            } else if let Some(index) = adjusted.iter().position(|item| intersection.contains(item))
+            {
                 adjusted.insert(index, *page);
             }
         } else {
