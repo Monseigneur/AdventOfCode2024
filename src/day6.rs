@@ -42,17 +42,18 @@ impl Point {
 }
 
 fn parse_input(contents: &str) -> (Grid, Point) {
-    let grid: Grid = contents.lines().map(|line| line.chars().collect()).collect();
+    let grid: Grid = contents
+        .lines()
+        .map(|line| line.chars().collect())
+        .collect();
 
     let mut starting_position = None;
 
     for (row, line) in contents.lines().enumerate() {
         for (col, c) in line.char_indices() {
             match c {
-                '^' => {
-                    starting_position = Some(Point::new(row, col))
-                }
-                _ => continue
+                '^' => starting_position = Some(Point::new(row, col)),
+                _ => continue,
             }
         }
     }
@@ -62,31 +63,39 @@ fn parse_input(contents: &str) -> (Grid, Point) {
 
 fn get_next_position(current: &Point, facing: usize, grid: &Grid) -> Option<(Point, usize)> {
     let next_row = match facing {
-        0 => if current.row > 0 {
-            Some(current.row - 1)
-        } else {
-            None
-        },
-        2 => if current.row < grid.len() - 1 {
-            Some(current.row + 1)
-        } else {
-            None
-        },
-        _ => Some(current.row)
+        0 => {
+            if current.row > 0 {
+                Some(current.row - 1)
+            } else {
+                None
+            }
+        }
+        2 => {
+            if current.row < grid.len() - 1 {
+                Some(current.row + 1)
+            } else {
+                None
+            }
+        }
+        _ => Some(current.row),
     };
 
     let next_col = match facing {
-        3 => if current.col > 0 {
-            Some(current.col - 1)
-        } else {
-            None
-        },
-        1 => if current.col < grid[0].len() - 1 {
-            Some(current.col + 1)
-        } else {
-            None
-        },
-        _ => Some(current.col)
+        3 => {
+            if current.col > 0 {
+                Some(current.col - 1)
+            } else {
+                None
+            }
+        }
+        1 => {
+            if current.col < grid[0].len() - 1 {
+                Some(current.col + 1)
+            } else {
+                None
+            }
+        }
+        _ => Some(current.col),
     };
 
     if next_row.is_none() || next_col.is_none() {
