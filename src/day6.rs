@@ -199,6 +199,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 

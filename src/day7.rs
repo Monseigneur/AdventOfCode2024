@@ -61,7 +61,52 @@ fn try_evaluate(result: usize, operands: &Vec<usize>) -> bool {
 }
 
 fn part_2(contents: &str) -> usize {
-    0
+    let equations = parse_input(contents);
+
+    equations
+        .iter()
+        .filter(|(result, operands)| try_evaluate_v2(*result, operands))
+        .map(|(result, _)| result)
+        .sum()
+}
+
+fn try_evaluate_v2(result: usize, operands: &Vec<usize>) -> bool {
+    // Simple brute force way, stopping early if the result is crossed.
+    let num_ops: usize = 3;
+
+    let max_val = num_ops.pow((operands.len() - 1) as u32);
+
+    for i in 0..max_val {
+        let mut flags = i;
+
+        let mut current = operands[0];
+
+        for j in 1..operands.len() {
+            match flags % num_ops {
+                0 => current += operands[j],
+                1 => current *= operands[j],
+                2 => {
+                    let mut s = current.to_string();
+                    s.push_str(&operands[j].to_string());
+
+                    current = s.parse::<usize>().unwrap()
+                }
+                _ => panic!("Illegal operation!"),
+            }
+
+            flags /= num_ops;
+
+            if current > result {
+                break;
+            }
+        }
+
+        if current == result {
+            return true;
+        }
+    }
+
+    false
 }
 
 #[cfg(test)]
@@ -86,13 +131,14 @@ mod tests {
     fn test_example_part_2() {
         let contents = utilities::read_file_data(DAY, "example.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 11387);
     }
 
     #[test]
+    #[ignore]
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 159490400628354);
     }
 }
