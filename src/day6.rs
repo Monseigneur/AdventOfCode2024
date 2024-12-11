@@ -13,18 +13,7 @@ type Grid = Vec<Vec<char>>;
 fn part_1(contents: &str) -> usize {
     let (grid, starting_position) = parse_input(contents);
 
-    let mut visited = HashSet::new();
-    visited.insert(starting_position);
-
-    let mut current = starting_position;
-    let mut facing = 0;
-
-    while let Some((next_position, next_facing)) = get_next_position(&current, facing, &grid) {
-        visited.insert(next_position);
-
-        current = next_position;
-        facing = next_facing;
-    }
+    let visited = walk_path(starting_position, &grid);
 
     visited.len()
 }
@@ -114,8 +103,73 @@ fn get_next_position(current: &Point, facing: usize, grid: &Grid) -> Option<(Poi
     }
 }
 
+fn walk_path(starting_position: Point, grid: &Grid) -> HashSet<Point> {
+    let mut visited = HashSet::new();
+    visited.insert(starting_position);
+
+    let mut current = starting_position;
+    let mut facing = 0;
+
+    while let Some((next_position, next_facing)) = get_next_position(&current, facing, &grid) {
+        visited.insert(next_position);
+
+        current = next_position;
+        facing = next_facing;
+    }
+
+    visited
+}
+
 fn part_2(contents: &str) -> usize {
-    0
+    // Crappy brute force way
+    let (mut grid, starting_position) = parse_input(contents);
+
+    let visited = walk_path(starting_position, &grid);
+
+    let mut count = 0;
+
+    for row in 0..grid.len() {
+        for col in 0..grid[0].len() {
+            if grid[row][col] != '.' || !visited.contains(&Point::new(row, col)) {
+                continue;
+            }
+
+            // Set the temporary obstacle and remove at the end.
+            grid[row][col] = '#';
+
+            if single_walk(starting_position, &grid) {
+                count += 1;
+            }
+
+            grid[row][col] = '.';
+        }
+    }
+
+    count
+}
+
+fn single_walk(starting_position: Point, grid: &Grid) -> bool {
+    let mut visited = HashSet::new();
+    visited.insert((starting_position, 0));
+
+    let mut current = starting_position;
+    let mut facing = 0;
+
+    while let Some((next_position, next_facing)) = get_next_position(&current, facing, &grid) {
+        let new_position = (next_position, next_facing);
+
+        if visited.contains(&new_position) {
+            // Found loop.
+            return true;
+        }
+
+        visited.insert(new_position);
+
+        current = next_position;
+        facing = next_facing;
+    }
+
+    false
 }
 
 #[cfg(test)]
@@ -140,13 +194,13 @@ mod tests {
     fn test_example_part_2() {
         let contents = utilities::read_file_data(DAY, "example.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 6);
     }
 
     #[test]
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 1753);
     }
 }
