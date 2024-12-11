@@ -72,10 +72,7 @@ fn validate_updates(update: &Vec<usize>, mapping: &Mapping) -> Option<usize> {
     for page in update {
         // Just need to check that this page is after all pages I have already seen.
         if let Some(pages_after) = mapping.get(page) {
-            if !seen_pages
-                .intersection(&pages_after)
-                .collect::<Vec<_>>()
-                .is_empty()
+            if seen_pages.intersection(&pages_after).count() != 0
             {
                 return None;
             }
@@ -88,7 +85,47 @@ fn validate_updates(update: &Vec<usize>, mapping: &Mapping) -> Option<usize> {
 }
 
 fn part_2(contents: &str) -> usize {
-    0
+    let (mapping, updates) = parse_input(contents);
+
+    let mut middle_sum = 0;
+
+    for update in updates {
+        if let Some(_) = validate_updates(&update, &mapping) {
+            continue;
+        }
+
+        // Maybe I can do it linearly? validate_updates fails because the intersection of mapping[item] and pages
+        // already seen is not empty. In theory, if a page fails, it can be moved just before the "earliest" page
+        // in the intersection.
+
+        middle_sum += validate_updates_v2(&update, &mapping).unwrap_or(0);
+    }
+
+    middle_sum
+}
+
+fn validate_updates_v2(update: &Vec<usize>, mapping: &Mapping) -> Option<usize> {
+    let mut seen_pages = HashSet::new();
+
+    let mut adjusted = vec![];
+
+    for page in update {
+        if let Some(pages_after) = mapping.get(page) {
+            let intersection = seen_pages.intersection(&pages_after).collect::<HashSet<_>>();
+
+            if intersection.is_empty() {
+                adjusted.push(*page);
+            } else if let Some(index) = adjusted.iter().position(|item| intersection.contains(item)) {
+                adjusted.insert(index, *page);
+            }
+        } else {
+            adjusted.push(*page);
+        }
+
+        seen_pages.insert(*page);
+    }
+
+    Some(adjusted[adjusted.len() / 2])
 }
 
 #[cfg(test)]
@@ -113,13 +150,13 @@ mod tests {
     fn test_example_part_2() {
         let contents = utilities::read_file_data(DAY, "example.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 123);
     }
 
     #[test]
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 4713);
     }
 }
