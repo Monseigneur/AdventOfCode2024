@@ -130,11 +130,12 @@ fn part_2(contents: &str) -> usize {
 
     for row in 0..grid.len() {
         for col in 0..grid[0].len() {
+            // Set a temporary obstacle, but only if there wasn't something there and
+            // it was actually reached on the path.
             if grid[row][col] != '.' || !visited.contains(&Point::new(row, col)) {
                 continue;
             }
 
-            // Set the temporary obstacle and remove at the end.
             grid[row][col] = '#';
 
             if single_walk(starting_position, &grid) {
