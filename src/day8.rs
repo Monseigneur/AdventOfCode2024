@@ -92,7 +92,7 @@ fn find_antinode_pairs(
         antinode_r -= delta_r;
         antinode_c -= delta_c;
 
-        if check_row(antinode_r, grid) && check_col(antinode_c, grid) {
+        if check_position(antinode_r, antinode_c, grid) {
             antinodes.push(Point::new(antinode_r as usize, antinode_c as usize));
         } else {
             break;
@@ -111,7 +111,7 @@ fn find_antinode_pairs(
         antinode_r += delta_r;
         antinode_c += delta_c;
 
-        if check_row(antinode_r, grid) && check_col(antinode_c, grid) {
+        if check_position(antinode_r, antinode_c, grid) {
             antinodes.push(Point::new(antinode_r as usize, antinode_c as usize));
         } else {
             break;
@@ -131,12 +131,11 @@ fn find_antinode_pairs(
     antinodes
 }
 
-fn check_row(row: isize, grid: &Grid) -> bool {
-    row >= 0 && row < grid.len() as isize
-}
+fn check_position(row: isize, col: isize, grid: &Grid) -> bool {
+    let row_valid = row >= 0 && row < grid.len() as isize;
+    let col_valid = col >= 0 && col < grid[0].len() as isize;
 
-fn check_col(col: isize, grid: &Grid) -> bool {
-    col >= 0 && col < grid[0].len() as isize
+    row_valid && col_valid
 }
 
 fn part_2(contents: &str) -> usize {
