@@ -18,7 +18,7 @@ fn part_1(contents: &str) -> usize {
 
     let antennas = find_antennas(&grid);
 
-    find_antinodes(&grid, &antennas).len()
+    find_antinodes(&grid, &antennas, false)
 }
 
 fn parse_input(contents: &str) -> Grid {
@@ -50,89 +50,101 @@ fn find_antennas(grid: &Grid) -> Antennas {
     antennas
 }
 
-fn find_antinodes(grid: &Grid, antennas: &Antennas) -> HashSet<Point> {
+fn find_antinodes(grid: &Grid, antennas: &Antennas, resonant: bool) -> usize {
     let mut antinodes = HashSet::new();
 
-    for (antenna, positions) in antennas {
+    for (_, positions) in antennas {
         // Find all pairs of positions.
         for i in 0..(positions.len() - 1) {
             for j in (i + 1)..positions.len() {
-                let pairs = find_antinode_pairs(&positions[i], &positions[j], grid);
+                let pairs = find_antinode_pairs(&positions[i], &positions[j], grid, resonant);
 
                 antinodes.extend(pairs);
             }
         }
     }
 
-    antinodes
+    antinodes.len()
 }
 
-fn find_antinode_pairs(position1: &Point, position2: &Point, grid: &Grid) -> Vec<Point> {
+fn find_antinode_pairs(
+    position1: &Point,
+    position2: &Point,
+    grid: &Grid,
+    resonant: bool,
+) -> Vec<Point> {
     let mut antinodes = vec![];
 
-    let cross_pairs = position1.row.cmp(&position2.row) != position1.col.cmp(&position2.col);
+    let p1_row = position1.row as isize;
+    let p1_col = position1.col as isize;
 
-    let delta_r = position1.row.abs_diff(position2.row);
-    let delta_c = position1.col.abs_diff(position2.col);
+    let p2_row = position2.row as isize;
+    let p2_col = position2.col as isize;
 
-    let (smallest_r, largest_r) = min_max(position1.row, position2.row);
-    let (smallest_c, largest_c) = min_max(position1.col, position2.col);
+    let delta_r = p2_row - p1_row;
+    let delta_c = p2_col - p1_col;
 
-    let smallest_r = if smallest_r < delta_r {
-        None
-    } else {
-        Some(smallest_r - delta_r)
-    };
+    // Walk "negative" from position1.
+    let mut antinode_r = p1_row;
+    let mut antinode_c = p1_col;
 
-    let largest_r = if largest_r + delta_r >= grid.len() {
-        None
-    } else {
-        Some(largest_r + delta_r)
-    };
+    loop {
+        antinode_r -= delta_r;
+        antinode_c -= delta_c;
 
-    let smallest_c = if smallest_c < delta_c {
-        None
-    } else {
-        Some(smallest_c - delta_c)
-    };
-
-    let largest_c = if largest_c + delta_c >= grid[0].len() {
-        None
-    } else {
-        Some(largest_c + delta_c)
-    };
-
-    if cross_pairs {
-        if smallest_r.is_some() && largest_c.is_some() {
-            antinodes.push(Point::new(smallest_r.unwrap(), largest_c.unwrap()));
+        if check_row(antinode_r, grid) && check_col(antinode_c, grid) {
+            antinodes.push(Point::new(antinode_r as usize, antinode_c as usize));
+        } else {
+            break;
         }
 
-        if largest_r.is_some() && smallest_c.is_some() {
-            antinodes.push(Point::new(largest_r.unwrap(), smallest_c.unwrap()));
+        if !resonant {
+            break;
         }
-    } else {
-        if smallest_r.is_some() && smallest_c.is_some() {
-            antinodes.push(Point::new(smallest_r.unwrap(), smallest_c.unwrap()));
+    }
+
+    // Walk "positive" from position2.
+    let mut antinode_r = p2_row;
+    let mut antinode_c = p2_col;
+
+    loop {
+        antinode_r += delta_r;
+        antinode_c += delta_c;
+
+        if check_row(antinode_r, grid) && check_col(antinode_c, grid) {
+            antinodes.push(Point::new(antinode_r as usize, antinode_c as usize));
+        } else {
+            break;
         }
 
-        if largest_r.is_some() && largest_c.is_some() {
-            antinodes.push(Point::new(largest_r.unwrap(), largest_c.unwrap()));
+        if !resonant {
+            break;
         }
+    }
+
+    // If resonant, include the two antennas.
+    if resonant {
+        antinodes.push(*position1);
+        antinodes.push(*position2);
     }
 
     antinodes
 }
 
-fn min_max(val1: usize, val2: usize) -> (usize, usize) {
-    if val1 < val2 {
-        (val1, val2)
-    } else {
-        (val2, val1)
-    }
+fn check_row(row: isize, grid: &Grid) -> bool {
+    row >= 0 && row < grid.len() as isize
+}
+
+fn check_col(col: isize, grid: &Grid) -> bool {
+    col >= 0 && col < grid[0].len() as isize
 }
 
 fn part_2(contents: &str) -> usize {
-    0
+    let grid = parse_input(contents);
+
+    let antennas = find_antennas(&grid);
+
+    find_antinodes(&grid, &antennas, true)
 }
 
 #[cfg(test)]
@@ -157,13 +169,20 @@ mod tests {
     fn test_example_part_2() {
         let contents = utilities::read_file_data(DAY, "example.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 34);
+    }
+
+    #[test]
+    fn test_example2_part_2() {
+        let contents = utilities::read_file_data(DAY, "example2.txt");
+
+        assert_eq!(part_2(&contents), 9);
     }
 
     #[test]
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 884);
     }
 }
