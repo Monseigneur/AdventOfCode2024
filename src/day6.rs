@@ -18,14 +18,14 @@ fn part_1(contents: &str) -> usize {
     visited.len()
 }
 
-#[derive(Clone, Copy, Hash, Eq, PartialEq)]
-struct Point {
-    row: usize,
-    col: usize,
+#[derive(Clone, Copy, Hash, Eq, PartialEq, Debug)]
+pub struct Point {
+    pub row: usize,
+    pub col: usize,
 }
 
 impl Point {
-    fn new(row: usize, col: usize) -> Self {
+    pub fn new(row: usize, col: usize) -> Self {
         Self { row, col }
     }
 }
