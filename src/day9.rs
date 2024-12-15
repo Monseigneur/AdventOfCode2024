@@ -54,7 +54,10 @@ fn create_section_list(contents: &str) -> Vec<Section> {
 fn defragment_sections(section_list: &Vec<Section>) -> Vec<usize> {
     let mut block_list = vec![];
 
-    let mut available_file_blocks = section_list.iter().filter_map(|section| section.file_id.map(|_| section.len)).collect::<Vec<usize>>();
+    let mut available_file_blocks = section_list
+        .iter()
+        .filter_map(|section| section.file_id.map(|_| section.len))
+        .collect::<Vec<usize>>();
     let total_file_blocks = available_file_blocks.iter().sum::<usize>();
 
     if total_file_blocks == 0 {
@@ -110,7 +113,10 @@ fn defragment_sections(section_list: &Vec<Section>) -> Vec<usize> {
 }
 
 fn calculate_checksum(block_list: &Vec<usize>) -> usize {
-    block_list.iter().enumerate().fold(0, |acc, (idx, val)| acc + (idx * val))
+    block_list
+        .iter()
+        .enumerate()
+        .fold(0, |acc, (idx, val)| acc + (idx * val))
 }
 
 fn part_2(contents: &str) -> usize {
