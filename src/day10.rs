@@ -18,7 +18,7 @@ fn part_1(contents: &str) -> usize {
 
     trailheads
         .iter()
-        .map(|trailhead| calculate_trail_score(trailhead, &map))
+        .map(|trailhead| calculate_trail_score(trailhead, &map, false))
         .sum()
 }
 
@@ -47,7 +47,7 @@ fn find_trailheads(map: &TopographicMap) -> Vec<Point> {
     trailheads
 }
 
-fn calculate_trail_score(trailhead: &Point, map: &TopographicMap) -> usize {
+fn calculate_trail_score(trailhead: &Point, map: &TopographicMap, unique_paths: bool) -> usize {
     let mut queue = VecDeque::new();
     let mut seen = HashSet::new();
     let mut score = 0;
@@ -55,11 +55,13 @@ fn calculate_trail_score(trailhead: &Point, map: &TopographicMap) -> usize {
     queue.push_back(*trailhead);
 
     while let Some(current) = queue.pop_front() {
-        if seen.contains(&current) {
-            continue;
-        }
+        if !unique_paths {
+            if seen.contains(&current) {
+                continue;
+            }
 
-        seen.insert(current);
+            seen.insert(current);
+        }
 
         let current_height = map[current.row][current.col];
 
@@ -103,7 +105,13 @@ fn get_neighbors(current: &Point, map: &TopographicMap) -> Vec<Point> {
 }
 
 fn part_2(contents: &str) -> usize {
-    0
+    let map = parse_input(contents);
+    let trailheads = find_trailheads(&map);
+
+    trailheads
+        .iter()
+        .map(|trailhead| calculate_trail_score(trailhead, &map, true))
+        .sum()
 }
 
 #[cfg(test)]
@@ -128,13 +136,13 @@ mod tests {
     fn test_example_part_2() {
         let contents = utilities::read_file_data(DAY, "example.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 81);
     }
 
     #[test]
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 1436);
     }
 }
