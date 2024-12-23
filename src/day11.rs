@@ -53,71 +53,33 @@ fn blink_once(stones: &Vec<usize>) -> Vec<usize> {
 
 fn part_2(contents: &str) -> usize {
     let stones = parse_input(contents);
-    let mut data_table: HashMap<usize, HashMap<usize, usize>> = HashMap::new();
 
-    stones
-        .iter()
-        .map(|stone| process_stone(*stone, 75, &mut data_table))
-        .sum()
+    let mut stone_map: HashMap<usize, usize> = HashMap::new();
+    for stone in stones {
+        update_map(&mut stone_map, stone, 1);
+    }
+
+    for _ in 0..75 {
+        let mut new_stone_map: HashMap<usize, usize> = HashMap::new();
+
+        for (stone, count) in stone_map {
+            let new_stones = blink_once(&vec![stone]);
+
+            for new_stone in new_stones {
+                update_map(&mut new_stone_map, new_stone, count);
+            }
+        }
+
+        stone_map = new_stone_map;
+    }
+
+    stone_map.values().sum()
 }
 
-fn process_stone(
-    stone: usize,
-    level: usize,
-    data_table: &mut HashMap<usize, HashMap<usize, usize>>,
-) -> usize {
-    if level == 0 {
-        return 1;
-    }
-
-    if let Some(data) = data_table.get(&stone) {
-        if let Some(count) = data.get(&level) {
-            return *count;
-        }
-    }
-
-    // Not at the bottom, need to continue.
-    let mut current_level = level;
-    let mut count = 0;
-
-    let mut stone_pieces = vec![stone];
-
-    while current_level > 0 {
-        if stone_pieces.is_empty() {
-            break;
-        }
-
-        stone_pieces = blink_once(&stone_pieces);
-        current_level -= 1;
-
-        let mut new_stone_pieces = vec![];
-        for stone in stone_pieces {
-            if stone < 10 {
-                let result = process_stone(stone, current_level, data_table);
-
-                data_table
-                    .entry(stone)
-                    .and_modify(|data| {
-                        data.insert(current_level, result);
-                    })
-                    .or_insert({
-                        let mut data = HashMap::new();
-                        data.insert(current_level, result);
-                        data
-                    });
-
-                count += result;
-
-                continue;
-            }
-
-            new_stone_pieces.push(stone);
-        }
-
-        stone_pieces = new_stone_pieces;
-    }
-
-    count + stone_pieces.len()
+fn update_map(map: &mut HashMap<usize, usize>, stone: usize, count: usize) {
+    map.entry(stone)
+        .and_modify(|val| *val += count)
+        .or_insert(count);
 }
 
 #[cfg(test)]
