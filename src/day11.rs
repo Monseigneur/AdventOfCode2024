@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use utilities;
 
 const DAY: usize = 11;
@@ -50,7 +52,72 @@ fn blink_once(stones: &Vec<usize>) -> Vec<usize> {
 }
 
 fn part_2(contents: &str) -> usize {
-    0
+    let stones = parse_input(contents);
+    let mut data_table: HashMap<usize, HashMap<usize, usize>> = HashMap::new();
+
+    stones
+        .iter()
+        .map(|stone| process_stone(*stone, 75, &mut data_table))
+        .sum()
+}
+
+fn process_stone(
+    stone: usize,
+    level: usize,
+    data_table: &mut HashMap<usize, HashMap<usize, usize>>,
+) -> usize {
+    if level == 0 {
+        return 1;
+    }
+
+    if let Some(data) = data_table.get(&stone) {
+        if let Some(count) = data.get(&level) {
+            return *count;
+        }
+    }
+
+    // Not at the bottom, need to continue.
+    let mut current_level = level;
+    let mut count = 0;
+
+    let mut stone_pieces = vec![stone];
+
+    while current_level > 0 {
+        if stone_pieces.is_empty() {
+            break;
+        }
+
+        stone_pieces = blink_once(&stone_pieces);
+        current_level -= 1;
+
+        let mut new_stone_pieces = vec![];
+        for stone in stone_pieces {
+            if stone < 10 {
+                let result = process_stone(stone, current_level, data_table);
+
+                data_table
+                    .entry(stone)
+                    .and_modify(|data| {
+                        data.insert(current_level, result);
+                    })
+                    .or_insert({
+                        let mut data = HashMap::new();
+                        data.insert(current_level, result);
+                        data
+                    });
+
+                count += result;
+
+                continue;
+            }
+
+            new_stone_pieces.push(stone);
+        }
+
+        stone_pieces = new_stone_pieces;
+    }
+
+    count + stone_pieces.len()
 }
 
 #[cfg(test)]
@@ -72,16 +139,9 @@ mod tests {
     }
 
     #[test]
-    fn test_example_part_2() {
-        let contents = utilities::read_file_data(DAY, "example.txt");
-
-        assert_eq!(part_2(&contents), 0);
-    }
-
-    #[test]
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 241394363462435);
     }
 }
