@@ -13,15 +13,20 @@ fn part_1(contents: &str) -> usize {
     calculate_checksum(&block_list)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 struct Section {
     file_id: Option<usize>,
+    start: usize,
     len: usize,
 }
 
 impl Section {
-    fn new(file_id: Option<usize>, len: usize) -> Self {
-        Self { file_id, len }
+    fn new(file_id: Option<usize>, start: usize, len: usize) -> Self {
+        Self {
+            file_id,
+            len,
+            start,
+        }
     }
 }
 
@@ -30,6 +35,7 @@ fn create_section_list(contents: &str) -> Vec<Section> {
 
     let mut is_file = true;
     let mut current_file_id: usize = 0;
+    let mut current_position = 0;
     for c in contents.chars() {
         let length = c.to_digit(10).unwrap() as usize;
 
@@ -41,9 +47,11 @@ fn create_section_list(contents: &str) -> Vec<Section> {
             None
         };
 
-        let section = Section::new(file_id, length);
+        let section = Section::new(file_id, current_position, length);
 
         section_list.push(section);
+
+        current_position += length;
 
         is_file = !is_file;
     }
@@ -120,7 +128,63 @@ fn calculate_checksum(block_list: &Vec<usize>) -> usize {
 }
 
 fn part_2(contents: &str) -> usize {
-    0
+    let section_list = create_section_list(contents);
+    let defragmented_sections = defragment_sections_v2(&section_list);
+
+    calculate_checksum_v2(&defragmented_sections)
+}
+
+fn defragment_sections_v2(section_list: &Vec<Section>) -> Vec<Section> {
+    let mut file_sections = vec![];
+    let mut empty_sections = vec![];
+
+    for section in section_list {
+        if section.file_id.is_some() {
+            file_sections.push(section.clone());
+        } else {
+            empty_sections.push(section.clone());
+        }
+    }
+
+    // For each file section in reverse, try to fit it in an earlier slot.
+    for file_section in file_sections.iter_mut().rev() {
+        for empty_section in empty_sections.iter_mut() {
+            if file_section.start < empty_section.start {
+                break;
+            }
+
+            if file_section.len <= empty_section.len {
+                file_section.start = empty_section.start;
+
+                empty_section.start += file_section.len;
+                empty_section.len -= file_section.len;
+
+                break;
+            }
+        }
+    }
+
+    file_sections.sort_by(|a, b| a.start.partial_cmp(&b.start).unwrap());
+
+    file_sections
+}
+
+fn calculate_checksum_v2(section_list: &Vec<Section>) -> usize {
+    section_list
+        .iter()
+        .map(|section| {
+            let Some(file_id) = section.file_id else {
+                return 0;
+            };
+
+            let mut checksum = 0;
+            for i in section.start..(section.start + section.len) {
+                checksum += file_id * i;
+            }
+
+            checksum
+        })
+        .sum()
 }
 
 #[cfg(test)]
@@ -145,13 +209,13 @@ mod tests {
     fn test_example_part_2() {
         let contents = utilities::read_file_data(DAY, "example.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 2858);
     }
 
     #[test]
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 6389911791746);
     }
 }
