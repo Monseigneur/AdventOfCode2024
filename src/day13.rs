@@ -7,7 +7,7 @@ pub fn run() {
 }
 
 fn part_1(contents: &str) -> usize {
-    let claw_machines = parse_input(contents);
+    let claw_machines = parse_input(contents, 0);
 
     claw_machines.iter().map(|cm| play_claw_machine(cm)).sum()
 }
@@ -28,7 +28,7 @@ impl ClawMachine {
     }
 }
 
-fn parse_input(contents: &str) -> Vec<ClawMachine> {
+fn parse_input(contents: &str, prize_scale: usize) -> Vec<ClawMachine> {
     let mut a_buttons = vec![];
     let mut b_buttons = vec![];
     let mut prizes = vec![];
@@ -56,7 +56,10 @@ fn parse_input(contents: &str) -> Vec<ClawMachine> {
         match line_pieces[0] {
             "Button A" => a_buttons.push(values),
             "Button B" => b_buttons.push(values),
-            "Prize" => prizes.push(values),
+            "Prize" => {
+                let values = (values.0 + prize_scale, values.1 + prize_scale);
+                prizes.push(values)
+            },
             _ => panic!("Illegal text!"),
         };
     }
@@ -97,7 +100,9 @@ fn play_claw_machine(claw_machine: &ClawMachine) -> usize {
 }
 
 fn part_2(contents: &str) -> usize {
-    0
+    let claw_machines = parse_input(contents, 10000000000000);
+
+    claw_machines.iter().map(|cm| play_claw_machine(cm)).sum()
 }
 
 #[cfg(test)]
@@ -119,16 +124,9 @@ mod tests {
     }
 
     #[test]
-    fn test_example_part_2() {
-        let contents = utilities::read_file_data(DAY, "example.txt");
-
-        assert_eq!(part_2(&contents), 0);
-    }
-
-    #[test]
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 83029436920891);
     }
 }
