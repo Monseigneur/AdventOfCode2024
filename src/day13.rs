@@ -59,7 +59,7 @@ fn parse_input(contents: &str, prize_scale: usize) -> Vec<ClawMachine> {
             "Prize" => {
                 let values = (values.0 + prize_scale, values.1 + prize_scale);
                 prizes.push(values)
-            },
+            }
             _ => panic!("Illegal text!"),
         };
     }
