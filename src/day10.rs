@@ -82,7 +82,7 @@ fn calculate_trail_score(trailhead: &Point, map: &TopographicMap, unique_paths: 
     score
 }
 
-fn get_neighbors(current: &Point, map: &TopographicMap) -> Vec<Point> {
+pub fn get_neighbors<T>(current: &Point, grid: &Vec<Vec<T>>) -> Vec<Point> {
     let mut neighbors = vec![];
 
     if current.row > 0 {
@@ -93,11 +93,11 @@ fn get_neighbors(current: &Point, map: &TopographicMap) -> Vec<Point> {
         neighbors.push(Point::new(current.row, current.col - 1));
     }
 
-    if current.row < map.len() - 1 {
+    if current.row < grid.len() - 1 {
         neighbors.push(Point::new(current.row + 1, current.col));
     }
 
-    if current.col < map[0].len() - 1 {
+    if current.col < grid[0].len() - 1 {
         neighbors.push(Point::new(current.row, current.col + 1));
     }
 

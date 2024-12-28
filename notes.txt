@@ -55,3 +55,7 @@ Day 11:
     - part1: 2024-12-22 3:35pm [203457, 16.076ms] (62720)
     - part2: 2024-12-22 7:37pm [241394363462435, 139.93ms] (54136)
     - Made improvements to part 2 to not use recursion after reading on reddit
+
+Day 12:
+    - Start 2024-12-25 10:56pm
+    - part1: 2024-12-27 5:05pm [1434856, 482.5ms] (53351)
