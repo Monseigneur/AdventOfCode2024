@@ -75,3 +75,53 @@ Day 15:
     - Start 2024-12-30 4:25pm
     - part1: 2024-12-30 9:21pm [1495147, 28.801ms] (42470)
     - part2:
+
+Day 16:
+    - Start
+    - part1:
+    - part2:
+
+Day 17:
+    - Start
+    - part1:
+    - part2:
+
+Day 18:
+    - Start
+    - part1:
+    - part2:
+
+Day 19:
+    - Start
+    - part1:
+    - part2:
+
+Day 20:
+    - Start
+    - part1:
+    - part2:
+
+Day 21:
+    - Start
+    - part1:
+    - part2:
+
+Day 22:
+    - Start
+    - part1:
+    - part2:
+
+Day 23:
+    - Start
+    - part1:
+    - part2:
+
+Day 24:
+    - Start
+    - part1:
+    - part2:
+
+Day 25:
+    - Start
+    - part1:
+    - part2:
