@@ -91,7 +91,7 @@ fn try_evaluate_v2(result: usize, operands: &Vec<usize>) -> bool {
 
                     current = s.parse::<usize>().unwrap()
                 }
-                _ => panic!("Illegal operation!"),
+                _ => unreachable!("Illegal operation!"),
             }
 
             flags /= num_ops;
