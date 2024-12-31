@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use utilities;
 
 use crate::day6::Point;
@@ -136,48 +138,51 @@ fn get_points_in_direction(position: &Point, direction: char, grid: &Grid) -> Ve
 
     let mut points = vec![];
 
-    // Not sure how to make this better.
-    if row_range.len() == 1 {
-        let r = row_range.start;
-        if col_rev {
-            for c in col_range.into_iter().rev() {
-                if grid[r][c] == '#' {
-                    break;
-                }
-
-                points.push(Point::new(r, c));
-            }
-        } else {
-            for c in col_range.into_iter() {
-                if grid[r][c] == '#' {
-                    break;
-                }
-
-                points.push(Point::new(r, c));
-            }
+    for point in get_points_iter(row_range, col_range, row_rev, col_rev) {
+        if grid[point.row][point.col] == '#' {
+            break;
         }
-    } else {
-        let c = col_range.start;
-        if row_rev {
-            for r in row_range.into_iter().rev() {
-                if grid[r][c] == '#' {
-                    break;
-                }
 
-                points.push(Point::new(r, c));
-            }
-        } else {
-            for r in row_range.into_iter() {
-                if grid[r][c] == '#' {
-                    break;
-                }
-
-                points.push(Point::new(r, c));
-            }
-        }
+        points.push(point);
     }
 
     points
+}
+
+fn get_points_iter(
+    row_range: Range<usize>,
+    col_range: Range<usize>,
+    row_rev: bool,
+    col_rev: bool,
+) -> impl Iterator<Item = Point> {
+    let use_row_iter = row_range.len() != 1;
+    let (rev_iter, other_constant) = if use_row_iter {
+        (row_rev, col_range.start)
+    } else {
+        (col_rev, row_range.start)
+    };
+
+    let iter: Box<dyn Iterator<Item = usize>> = if use_row_iter {
+        if rev_iter {
+            Box::new(row_range.into_iter().rev())
+        } else {
+            Box::new(row_range.into_iter())
+        }
+    } else {
+        if rev_iter {
+            Box::new(col_range.into_iter().rev())
+        } else {
+            Box::new(col_range.into_iter())
+        }
+    };
+
+    iter.map(move |val| {
+        if use_row_iter {
+            Point::new(val, other_constant)
+        } else {
+            Point::new(other_constant, val)
+        }
+    })
 }
 
 fn find_boxes(grid: &Grid) -> Vec<Point> {
