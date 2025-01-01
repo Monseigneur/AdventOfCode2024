@@ -1,0 +1,156 @@
+use utilities;
+
+const DAY: usize = 17;
+
+pub fn run() {
+    utilities::run_puzzle(DAY, part_1, part_2);
+}
+
+fn part_1(contents: &str) -> String {
+    let mut computer = parse_input(contents);
+
+    while computer.step() {}
+
+    computer.get_output()
+}
+
+struct Computer {
+    a: usize,
+    b: usize,
+    c: usize,
+    ip: usize,
+    instructions: Vec<usize>,
+    output: Vec<usize>,
+}
+
+impl Computer {
+    fn new(a: usize, b: usize, c: usize, instructions: Vec<usize>) -> Self {
+        Self {
+            a,
+            b,
+            c,
+            ip: 0,
+            instructions,
+            output: vec![],
+        }
+    }
+
+    fn step(&mut self) -> bool {
+        let opcode = self.instructions[self.ip];
+        let operand = self.instructions[self.ip + 1];
+        let combo_operand = self.get_combo_operand(operand);
+
+        let mut advance_ip = true;
+
+        match opcode {
+            0 => self.a = self.dv(combo_operand),
+            1 => self.b = self.b ^ operand,
+            2 => self.b = combo_operand % 8,
+            3 => {
+                if self.a != 0 {
+                    self.ip = operand;
+                    advance_ip = false;
+                }
+            }
+            4 => self.b = self.b ^ self.c,
+            5 => self.output.push(combo_operand % 8),
+            6 => self.b = self.dv(combo_operand),
+            7 => self.c = self.dv(combo_operand),
+            _ => unreachable!("Illegal opcode"),
+        }
+
+        if advance_ip {
+            self.ip += 2;
+        }
+
+        self.ip < self.instructions.len()
+    }
+
+    fn get_combo_operand(&self, operand: usize) -> usize {
+        if operand <= 3 {
+            operand
+        } else {
+            match operand {
+                4 => self.a,
+                5 => self.b,
+                6 => self.c,
+                _ => panic!("Illegal operand"),
+            }
+        }
+    }
+
+    fn dv(&self, combo_operand: usize) -> usize {
+        self.a / (2_usize.pow(combo_operand as u32) as usize)
+    }
+
+    fn get_output(&self) -> String {
+        self.output
+            .iter()
+            .map(usize::to_string)
+            .collect::<Vec<_>>()
+            .join(",")
+    }
+}
+
+fn parse_input(contents: &str) -> Computer {
+    let mut registers = vec![];
+    let mut instructions = vec![];
+
+    let mut done_registers = false;
+
+    for line in contents.lines() {
+        if line.is_empty() {
+            done_registers = true;
+            continue;
+        }
+
+        let line_data = line.split(":").skip(1).next().unwrap().trim();
+
+        if !done_registers {
+            let register = line_data.parse::<usize>().unwrap();
+
+            registers.push(register);
+        } else {
+            instructions.extend(line_data.split(",").map(|s| s.parse::<usize>().unwrap()));
+        }
+    }
+
+    Computer::new(registers[0], registers[1], registers[2], instructions)
+}
+
+fn part_2(contents: &str) -> usize {
+    0
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_example_part_1() {
+        let contents = utilities::read_file_data(DAY, "example.txt");
+
+        assert_eq!(part_1(&contents), "4,6,3,5,6,3,5,2,1,0");
+    }
+
+    #[test]
+    fn test_input_part_1() {
+        let contents = utilities::read_file_data(DAY, "input.txt");
+
+        assert_eq!(part_1(&contents), "7,5,4,3,4,5,3,4,6");
+    }
+
+    #[test]
+    fn test_example_part_2() {
+        let contents = utilities::read_file_data(DAY, "example.txt");
+
+        assert_eq!(part_2(&contents), 0);
+    }
+
+    #[test]
+    fn test_input_part_2() {
+        let contents = utilities::read_file_data(DAY, "input.txt");
+
+        assert_eq!(part_2(&contents), 0);
+    }
+}
