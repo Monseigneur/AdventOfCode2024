@@ -69,7 +69,8 @@ Day 13:
 Day 14:
     - Start 2024-12-27 7:04pm
     - part1: 2024-12-27 8:13pm [226179492, 1.34ms] (46814)
-    - part2:
+    - part2: 2024-12-27 9:47pm [7502, 536.37ms ] (42021), this one I did by hand at first,
+      no idea how to do it programmatically until I looked for ideas on reddit.
 
 Day 15:
     - Start 2024-12-30 4:25pm

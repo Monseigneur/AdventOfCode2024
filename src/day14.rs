@@ -6,12 +6,15 @@ use crate::day6::Point;
 
 const DAY: usize = 14;
 
+const ROOM_WIDTH: usize = 101;
+const ROOM_HEIGHT: usize = 103;
+
 pub fn run() {
     utilities::run_puzzle(DAY, part_1, part_2);
 }
 
 fn part_1(contents: &str) -> usize {
-    part_1_with_bounds(contents, 101, 103)
+    part_1_with_bounds(contents, ROOM_WIDTH, ROOM_HEIGHT)
 }
 
 fn part_1_with_bounds(contents: &str, room_width: usize, room_height: usize) -> usize {
@@ -19,7 +22,9 @@ fn part_1_with_bounds(contents: &str, room_width: usize, room_height: usize) -> 
 
     let robot_positions = robots
         .iter()
-        .map(|robot| move_robot(robot, room_width, room_height, 100))
+        .map(|robot| {
+            step_with_iterations(&robot.start, robot.velocity, room_width, room_height, 100)
+        })
         .collect::<Vec<_>>();
 
     calculate_safety_score(&robot_positions, room_width, room_height)
@@ -57,16 +62,6 @@ fn parse_input(contents: &str) -> Vec<Robot> {
             Robot::new(start, velocity)
         })
         .collect()
-}
-
-fn move_robot(robot: &Robot, room_width: usize, room_height: usize, iterations: usize) -> Point {
-    let final_row = robot.start.row as isize + iterations as isize * robot.velocity.0;
-    let final_col = robot.start.col as isize + iterations as isize * robot.velocity.1;
-
-    let final_row = adjust_value(final_row, room_height);
-    let final_col = adjust_value(final_col, room_width);
-
-    Point::new(final_row, final_col)
 }
 
 fn adjust_value(value: isize, max: usize) -> usize {
@@ -115,7 +110,60 @@ fn calculate_safety_score(
 }
 
 fn part_2(contents: &str) -> usize {
-    0
+    let robots = parse_input(contents);
+
+    let mut positions = vec![];
+    let mut velocities = vec![];
+
+    for robot in robots {
+        positions.push(robot.start);
+        velocities.push(robot.velocity);
+    }
+
+    let initial_positions = positions.clone();
+
+    let mut iteration = 0;
+    let mut safety_scores = vec![];
+
+    loop {
+        if positions == initial_positions && iteration != 0 {
+            break;
+        }
+
+        let score = calculate_safety_score(&positions, ROOM_WIDTH, ROOM_HEIGHT);
+        safety_scores.push(score);
+
+        for i in 0..positions.len() {
+            positions[i] =
+                step_with_iterations(&positions[i], velocities[i], ROOM_WIDTH, ROOM_HEIGHT, 1);
+        }
+
+        iteration += 1;
+    }
+
+    let (idx, _) = safety_scores
+        .iter()
+        .enumerate()
+        .min_by(|(_, a), (_, b)| a.cmp(b))
+        .unwrap();
+
+    idx
+}
+
+fn step_with_iterations(
+    start: &Point,
+    velocity: (isize, isize),
+    room_width: usize,
+    room_height: usize,
+    iterations: usize,
+) -> Point {
+    let final_row = start.row as isize + iterations as isize * velocity.0;
+    let final_col = start.col as isize + iterations as isize * velocity.1;
+
+    let final_row = adjust_value(final_row, room_height);
+    let final_col = adjust_value(final_col, room_width);
+
+    Point::new(final_row, final_col)
 }
 
 #[cfg(test)]
@@ -137,16 +185,9 @@ mod tests {
     }
 
     #[test]
-    fn test_example_part_2() {
-        let contents = utilities::read_file_data(DAY, "example.txt");
-
-        assert_eq!(part_2(&contents), 0);
-    }
-
-    #[test]
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 7502);
     }
 }
