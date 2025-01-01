@@ -9,7 +9,7 @@ pub fn run() {
 fn part_1(contents: &str) -> String {
     let mut computer = parse_input(contents);
 
-    while computer.step() {}
+    while computer.step(false) {}
 
     computer.get_output()
 }
@@ -21,6 +21,9 @@ struct Computer {
     ip: usize,
     instructions: Vec<usize>,
     output: Vec<usize>,
+    initial_a: usize,
+    initial_b: usize,
+    initial_c: usize,
 }
 
 impl Computer {
@@ -32,10 +35,13 @@ impl Computer {
             ip: 0,
             instructions,
             output: vec![],
+            initial_a: a,
+            initial_b: b,
+            initial_c: c,
         }
     }
 
-    fn step(&mut self) -> bool {
+    fn step(&mut self, exit_on_branch: bool) -> bool {
         let opcode = self.instructions[self.ip];
         let operand = self.instructions[self.ip + 1];
         let combo_operand = self.get_combo_operand(operand);
@@ -50,6 +56,10 @@ impl Computer {
                 if self.a != 0 {
                     self.ip = operand;
                     advance_ip = false;
+
+                    if exit_on_branch {
+                        return false;
+                    }
                 }
             }
             4 => self.b = self.b ^ self.c,
@@ -90,6 +100,15 @@ impl Computer {
             .collect::<Vec<_>>()
             .join(",")
     }
+
+    fn reset(&mut self) {
+        self.output.clear();
+        self.ip = 0;
+
+        self.a = self.initial_a;
+        self.b = self.initial_b;
+        self.c = self.initial_c;
+    }
 }
 
 fn parse_input(contents: &str) -> Computer {
@@ -119,7 +138,66 @@ fn parse_input(contents: &str) -> Computer {
 }
 
 fn part_2(contents: &str) -> usize {
-    0
+    let mut computer = parse_input(contents);
+
+    calculate_value(&mut computer)
+}
+
+fn calculate_value(computer: &mut Computer) -> usize {
+    let instructions = computer
+        .instructions
+        .iter()
+        .rev()
+        .cloned()
+        .collect::<Vec<_>>();
+
+    let result = calculate_value_helper(computer, &instructions, 0, 0).unwrap();
+
+    // Validate
+    computer.reset();
+    computer.a = result;
+
+    while computer.step(false) {}
+
+    if computer.output != computer.instructions {
+        panic!("Incorrect value!");
+    }
+
+    result
+}
+
+fn calculate_value_helper(
+    computer: &mut Computer,
+    instructions: &Vec<usize>,
+    value: usize,
+    idx: usize,
+) -> Option<usize> {
+    if idx == instructions.len() {
+        return Some(value);
+    }
+
+    let instruction = instructions[idx];
+
+    for i in 0..8 {
+        let current_value = value << 3 | i;
+
+        computer.reset();
+        computer.a = current_value;
+
+        while computer.step(true) {}
+
+        if let Some(last) = computer.output.iter().next() {
+            if last == &instruction {
+                let result = calculate_value_helper(computer, instructions, current_value, idx + 1);
+
+                if result.is_some() {
+                    return result;
+                }
+            }
+        }
+    }
+
+    None
 }
 
 #[cfg(test)]
@@ -141,16 +219,16 @@ mod tests {
     }
 
     #[test]
-    fn test_example_part_2() {
-        let contents = utilities::read_file_data(DAY, "example.txt");
+    fn test_example2_part_2() {
+        let contents = utilities::read_file_data(DAY, "example2.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 117440);
     }
 
     #[test]
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 164278899142333);
     }
 }
