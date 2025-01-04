@@ -1,4 +1,4 @@
-use std::collections::{BinaryHeap, HashSet};
+use std::collections::{BinaryHeap, HashMap, HashSet};
 
 use utilities;
 
@@ -16,7 +16,7 @@ fn part_1(contents: &str) -> usize {
 }
 
 fn part_1_with_bounds(contents: &str, width: usize, height: usize, num_bytes: usize) -> usize {
-    let bytes = parse_input(contents, num_bytes);
+    let bytes = parse_input(contents, Some(num_bytes));
     let memory_region = build_memory_region(&bytes, width, height);
 
     find_shortest_path(
@@ -26,19 +26,21 @@ fn part_1_with_bounds(contents: &str, width: usize, height: usize, num_bytes: us
     )
 }
 
-fn parse_input(contents: &str, num_bytes: usize) -> Vec<Point> {
-    contents
-        .lines()
-        .map(|line| {
-            let pieces = line
-                .split(",")
-                .map(|s| s.parse::<usize>().unwrap())
-                .collect::<Vec<_>>();
+fn parse_input(contents: &str, num_bytes: Option<usize>) -> Vec<Point> {
+    let points = contents.lines().map(|line| {
+        let pieces = line
+            .split(",")
+            .map(|s| s.parse::<usize>().unwrap())
+            .collect::<Vec<_>>();
 
-            Point::new(pieces[0], pieces[1])
-        })
-        .take(num_bytes)
-        .collect()
+        Point::new(pieces[0], pieces[1])
+    });
+
+    if let Some(num_bytes) = num_bytes {
+        points.take(num_bytes).collect()
+    } else {
+        points.collect()
+    }
 }
 
 type MemoryRegion = Vec<Vec<char>>;
@@ -83,36 +85,87 @@ impl<T> Ord for MinHeapNode<T> {
 }
 
 fn find_shortest_path(memory_region: &MemoryRegion, start: &Point, end: &Point) -> usize {
+    find_shortest_path_points(memory_region, start, end)
+        .unwrap()
+        .len()
+        - 1
+}
+
+fn find_shortest_path_points(
+    memory_region: &MemoryRegion,
+    start: &Point,
+    end: &Point,
+) -> Option<HashSet<Point>> {
     let mut queue = BinaryHeap::new();
-    let mut visited = HashSet::new();
+    let mut visited = HashMap::new();
 
-    queue.push(MinHeapNode::new(0, *start));
+    queue.push(MinHeapNode::new(0, (*start, None)));
 
-    while let Some(node) = queue.pop() {
-        if node.1 == *end {
-            return node.0;
-        }
-
-        if visited.contains(&node.1) {
+    let mut found_end = false;
+    while let Some(MinHeapNode(key, (point, parent))) = queue.pop() {
+        if visited.contains_key(&point) {
             continue;
         }
 
-        visited.insert(node.1);
+        visited.insert(point, parent);
 
-        let next_dist = node.0 + 1;
+        if point == *end {
+            found_end = true;
+            break;
+        }
 
-        for neighbor in get_neighbors(&node.1, memory_region) {
+        let next_dist = key + 1;
+
+        for neighbor in get_neighbors(&point, memory_region) {
             if memory_region[neighbor.row][neighbor.col] != '#' {
-                queue.push(MinHeapNode::new(next_dist, neighbor));
+                queue.push(MinHeapNode::new(next_dist, (neighbor, Some(point))));
             }
         }
     }
 
-    unreachable!("Should have found a path!")
+    if found_end {
+        let mut path_points = HashSet::new();
+        path_points.insert(*end);
+
+        let mut current = *end;
+        while let Some(Some(parent)) = visited.get(&current) {
+            path_points.insert(*parent);
+            current = *parent;
+        }
+
+        return Some(path_points);
+    }
+
+    None
 }
 
-fn part_2(contents: &str) -> usize {
-    0
+fn part_2(contents: &str) -> String {
+    part_2_with_bounds(contents, 71, 71)
+}
+
+fn part_2_with_bounds(contents: &str, width: usize, height: usize) -> String {
+    let bytes = parse_input(contents, None);
+    let start = Point::new(0, 0);
+    let end = Point::new(height - 1, width - 1);
+
+    let mut memory_region = vec![vec!['.'; width]; height];
+
+    let mut byte_idx = 0;
+    while let Some(path_points) = find_shortest_path_points(&memory_region, &start, &end) {
+        for i in byte_idx..bytes.len() {
+            let byte = bytes[i];
+
+            memory_region[byte.row][byte.col] = '#';
+
+            if path_points.contains(&byte) {
+                byte_idx = i;
+                break;
+            }
+        }
+    }
+
+    let byte = bytes[byte_idx];
+    format!("{},{}", byte.row, byte.col)
 }
 
 #[cfg(test)]
@@ -137,13 +190,13 @@ mod tests {
     fn test_example_part_2() {
         let contents = utilities::read_file_data(DAY, "example.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2_with_bounds(&contents, 7, 7), "6,1");
     }
 
     #[test]
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), "34,32");
     }
 }
