@@ -90,8 +90,8 @@ Day 17:
       to exclusive endpoints on ranges.
 
 Day 18:
-    - Start
-    - part1:
+    - Start 2025-1-1 8:15pm
+    - part1: 2025-1-4 12:57pm [340, 14.7ms] (32127)
     - part2:
 
 Day 19:
