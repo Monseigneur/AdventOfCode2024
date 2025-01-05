@@ -98,7 +98,8 @@ Day 18:
 Day 19:
     - Start 2025-1-4 5:00pm
     - part1: 2025-1-5 12:23pm [228, 7.92ms] (31820)
-    - part2:
+    - part2: 2025-1-5 2:00pm [584553405070389, 68.99ms] (29006), naive counting algorithm at first didn't
+      finish, but came up with some memoization algorithm.
 
 Day 20:
     - Start

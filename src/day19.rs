@@ -55,10 +55,8 @@ fn check_towel_helper(pattern: &str, towels: &HashMap<char, Vec<String>>) -> boo
 
     for possible_pattern in possible_patterns {
         if pattern.starts_with(possible_pattern) {
-            let result = check_towel_helper(&pattern[possible_pattern.len()..], towels);
-
-            if result {
-                return result;
+            if check_towel_helper(&pattern[possible_pattern.len()..], towels) {
+                return true;
             }
         }
     }
@@ -67,7 +65,49 @@ fn check_towel_helper(pattern: &str, towels: &HashMap<char, Vec<String>>) -> boo
 }
 
 fn part_2(contents: &str) -> usize {
-    0
+    let (towels, patterns) = parse_input(contents);
+
+    patterns
+        .iter()
+        .map(|pattern| check_towel_pattern_v2(pattern, &towels))
+        .sum()
+}
+
+fn check_towel_pattern_v2<'a>(pattern: &'a String, towels: &HashMap<char, Vec<String>>) -> usize {
+    let mut memo_table: HashMap<&'a str, usize> = HashMap::new();
+
+    check_towel_helper_v2(pattern, towels, &mut memo_table)
+}
+
+fn check_towel_helper_v2<'a>(
+    pattern: &'a str,
+    towels: &HashMap<char, Vec<String>>,
+    memo_table: &mut HashMap<&'a str, usize>,
+) -> usize {
+    if pattern.is_empty() {
+        return 1;
+    }
+
+    if let Some(count) = memo_table.get(pattern) {
+        return *count;
+    }
+
+    let first_char = pattern.chars().next().unwrap();
+
+    let Some(possible_patterns) = towels.get(&first_char) else {
+        return 0;
+    };
+
+    let mut count = 0;
+    for possible_pattern in possible_patterns {
+        if pattern.starts_with(possible_pattern) {
+            count += check_towel_helper_v2(&pattern[possible_pattern.len()..], towels, memo_table);
+        }
+    }
+
+    memo_table.insert(pattern, count);
+
+    count
 }
 
 #[cfg(test)]
@@ -92,13 +132,13 @@ mod tests {
     fn test_example_part_2() {
         let contents = utilities::read_file_data(DAY, "example.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 16);
     }
 
     #[test]
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 584553405070389);
     }
 }
