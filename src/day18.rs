@@ -140,17 +140,22 @@ fn find_shortest_path_points(
 }
 
 fn part_2(contents: &str) -> String {
-    part_2_with_bounds(contents, 71, 71)
+    part_2_with_bounds(contents, 71, 71, 1024)
 }
 
-fn part_2_with_bounds(contents: &str, width: usize, height: usize) -> String {
+fn part_2_with_bounds(
+    contents: &str,
+    width: usize,
+    height: usize,
+    prefill_byte_count: usize,
+) -> String {
     let bytes = parse_input(contents, None);
     let start = Point::new(0, 0);
     let end = Point::new(height - 1, width - 1);
 
-    let mut memory_region = vec![vec!['.'; width]; height];
+    let mut memory_region = build_memory_region(&bytes[..prefill_byte_count], width, height);
 
-    let mut byte_idx = 0;
+    let mut byte_idx = prefill_byte_count;
     while let Some(path_points) = find_shortest_path_points(&memory_region, &start, &end) {
         for i in byte_idx..bytes.len() {
             let byte = bytes[i];
@@ -190,7 +195,7 @@ mod tests {
     fn test_example_part_2() {
         let contents = utilities::read_file_data(DAY, "example.txt");
 
-        assert_eq!(part_2_with_bounds(&contents, 7, 7), "6,1");
+        assert_eq!(part_2_with_bounds(&contents, 7, 7, 0), "6,1");
     }
 
     #[test]

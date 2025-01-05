@@ -92,7 +92,8 @@ Day 17:
 Day 18:
     - Start 2025-1-1 8:15pm
     - part1: 2025-1-4 12:57pm [340, 14.7ms] (32127)
-    - part2: 2025-1-4 1:40pm [34,32, 1.299s] (31406), slow initial algorithm.
+    - part2: 2025-1-4 1:40pm [34,32, 384.3ms] (31406), slow initial algorithm, improved by starting
+      later based on part 1.
 
 Day 19:
     - Start
