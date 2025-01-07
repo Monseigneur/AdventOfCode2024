@@ -112,8 +112,8 @@ Day 21:
     - part2:
 
 Day 22:
-    - Start
-    - part1:
+    - Start 2025-1-6 9:02pm
+    - part1: 2025-1-6 9:14pm [18317943467, 32.28ms] (26440)
     - part2:
 
 Day 23:
