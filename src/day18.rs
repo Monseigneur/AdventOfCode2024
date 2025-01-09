@@ -53,10 +53,10 @@ fn build_memory_region(bytes: &[Point], width: usize, height: usize) -> MemoryRe
     memory_region
 }
 
-struct MinHeapNode<T>(usize, T);
+pub struct MinHeapNode<T>(pub usize, pub T);
 
 impl<T> MinHeapNode<T> {
-    fn new(key: usize, value: T) -> Self {
+    pub fn new(key: usize, value: T) -> Self {
         Self(key, value)
     }
 }
