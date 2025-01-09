@@ -27,6 +27,7 @@ fn main() {
     day3::run();
     day4::run();
     day5::run();
+    day7::run();
     day8::run();
     day9::run();
     day10::run();

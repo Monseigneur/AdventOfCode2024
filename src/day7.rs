@@ -84,10 +84,8 @@ fn try_evaluate_v2(result: usize, operands: &[usize]) -> bool {
                 0 => current += *operand,
                 1 => current *= *operand,
                 2 => {
-                    let mut s = current.to_string();
-                    s.push_str(&operand.to_string());
-
-                    current = s.parse::<usize>().unwrap()
+                    let shift_val = 10_usize.pow(operand.ilog10() + 1);
+                    current = current * shift_val + operand;
                 }
                 _ => unreachable!("Illegal operation!"),
             }
@@ -133,7 +131,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 

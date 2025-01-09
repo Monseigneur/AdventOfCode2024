@@ -33,7 +33,8 @@ Day 6:
 Day 7:
     - Start 2024-12-10 7:56pm
     - part1: 2024-12-10 8:35pm [20281182715321, 79.838ms] (68760)
-    - part2: 2024-12-10 8:59pm [159490400628354, 16.605s] (65510)
+    - part2: 2024-12-10 8:59pm [159490400628354, 2.342s] (65510), Used a flamegraph to find a bottleneck and
+      made improvements.
 
 Day 8:
     - Start 2024-12-13 7:24pm
