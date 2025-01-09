@@ -1,7 +1,5 @@
 use std::collections::{BinaryHeap, HashSet};
 
-use utilities;
-
 use crate::day10::get_neighbors;
 use crate::day18::MinHeapNode;
 use crate::day6::Point;

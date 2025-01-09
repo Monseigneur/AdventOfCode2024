@@ -1,5 +1,3 @@
-use utilities;
-
 const DAY: usize = 4;
 
 pub fn run() {
@@ -38,9 +36,9 @@ fn count_rows(grid: &Grid) -> usize {
 fn count_columns(grid: &Grid) -> usize {
     let mut columns = vec![String::new(); grid[0].len()];
 
-    for row in 0..grid.len() {
-        for col in 0..grid[0].len() {
-            columns[col].push(grid[row][col]);
+    for row_data in grid {
+        for (col, col_data) in columns.iter_mut().enumerate() {
+            col_data.push(row_data[col]);
         }
     }
 
@@ -91,8 +89,8 @@ fn count_diagonals_tl_br(grid: &Grid) -> usize {
     count_instances(&diagonals)
 }
 
-fn count_instances(lines: &Vec<String>) -> usize {
-    const XMAS: &'static str = "XMAS";
+fn count_instances(lines: &[String]) -> usize {
+    const XMAS: &str = "XMAS";
 
     let mut count = 0;
 

@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use utilities;
-
 const DAY: usize = 19;
 
 pub fn run() {
@@ -22,7 +20,7 @@ fn parse_input(contents: &str) -> (HashMap<char, Vec<String>>, Vec<String>) {
 
     let mut towels: HashMap<char, Vec<String>> = HashMap::new();
 
-    for towel in iter.next().unwrap().split(",").map(|s| s.trim()) {
+    for towel in iter.next().unwrap().split(',').map(|s| s.trim()) {
         let c = towel.chars().next().unwrap();
         let towel = towel.to_string();
         towels
@@ -38,7 +36,7 @@ fn parse_input(contents: &str) -> (HashMap<char, Vec<String>>, Vec<String>) {
     (towels, patterns)
 }
 
-fn check_towel_pattern(pattern: &String, towels: &HashMap<char, Vec<String>>) -> bool {
+fn check_towel_pattern(pattern: &str, towels: &HashMap<char, Vec<String>>) -> bool {
     check_towel_helper(pattern, towels)
 }
 
@@ -54,10 +52,10 @@ fn check_towel_helper(pattern: &str, towels: &HashMap<char, Vec<String>>) -> boo
     };
 
     for possible_pattern in possible_patterns {
-        if pattern.starts_with(possible_pattern) {
-            if check_towel_helper(&pattern[possible_pattern.len()..], towels) {
-                return true;
-            }
+        if pattern.starts_with(possible_pattern)
+            && check_towel_helper(&pattern[possible_pattern.len()..], towels)
+        {
+            return true;
         }
     }
 
@@ -73,7 +71,7 @@ fn part_2(contents: &str) -> usize {
         .sum()
 }
 
-fn check_towel_pattern_v2<'a>(pattern: &'a String, towels: &HashMap<char, Vec<String>>) -> usize {
+fn check_towel_pattern_v2<'a>(pattern: &'a str, towels: &HashMap<char, Vec<String>>) -> usize {
     let mut memo_table: HashMap<&'a str, usize> = HashMap::new();
 
     check_towel_helper_v2(pattern, towels, &mut memo_table)

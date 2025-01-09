@@ -1,7 +1,5 @@
 use std::cmp::Ordering;
 
-use utilities;
-
 use crate::day6::Point;
 
 const DAY: usize = 14;
@@ -70,7 +68,7 @@ fn adjust_value(value: isize, max: usize) -> usize {
 
         value % max
     } else {
-        let rem = value.abs() as usize % max;
+        let rem = value.unsigned_abs() % max;
 
         if rem != 0 {
             max - rem

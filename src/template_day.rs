@@ -1,5 +1,3 @@
-use utilities;
-
 const DAY: usize = 0;
 
 pub fn run() {

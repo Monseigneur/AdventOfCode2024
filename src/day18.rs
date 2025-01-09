@@ -1,7 +1,5 @@
 use std::collections::{BinaryHeap, HashMap, HashSet};
 
-use utilities;
-
 use crate::day10::get_neighbors;
 use crate::day6::Point;
 
@@ -29,7 +27,7 @@ fn part_1_with_bounds(contents: &str, width: usize, height: usize, num_bytes: us
 fn parse_input(contents: &str, num_bytes: Option<usize>) -> Vec<Point> {
     let points = contents.lines().map(|line| {
         let pieces = line
-            .split(",")
+            .split(',')
             .map(|s| s.parse::<usize>().unwrap())
             .collect::<Vec<_>>();
 
@@ -73,7 +71,7 @@ impl<T> PartialEq for MinHeapNode<T> {
 
 impl<T> PartialOrd for MinHeapNode<T> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(&other))
+        Some(self.cmp(other))
     }
 }
 
@@ -157,12 +155,10 @@ fn part_2_with_bounds(
 
     let mut byte_idx = prefill_byte_count;
     while let Some(path_points) = find_shortest_path_points(&memory_region, &start, &end) {
-        for i in byte_idx..bytes.len() {
-            let byte = bytes[i];
-
+        for (i, byte) in bytes.iter().enumerate().skip(byte_idx) {
             memory_region[byte.row][byte.col] = '#';
 
-            if path_points.contains(&byte) {
+            if path_points.contains(byte) {
                 byte_idx = i;
                 break;
             }

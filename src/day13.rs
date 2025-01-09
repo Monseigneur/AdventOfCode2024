@@ -1,5 +1,3 @@
-use utilities;
-
 const DAY: usize = 13;
 
 pub fn run() {
@@ -9,7 +7,7 @@ pub fn run() {
 fn part_1(contents: &str) -> usize {
     let claw_machines = parse_input(contents, 0);
 
-    claw_machines.iter().map(|cm| play_claw_machine(cm)).sum()
+    claw_machines.iter().map(play_claw_machine).sum()
 }
 
 struct ClawMachine {
@@ -38,10 +36,10 @@ fn parse_input(contents: &str, prize_scale: usize) -> Vec<ClawMachine> {
             continue;
         }
 
-        let line_pieces = line.split(":").collect::<Vec<_>>();
+        let line_pieces = line.split(':').collect::<Vec<_>>();
 
         let values = line_pieces[1]
-            .split(",")
+            .split(',')
             .map(|s| s.trim())
             .map(|s| {
                 s.split(&['+', '='])
@@ -102,7 +100,7 @@ fn play_claw_machine(claw_machine: &ClawMachine) -> usize {
 fn part_2(contents: &str) -> usize {
     let claw_machines = parse_input(contents, 10000000000000);
 
-    claw_machines.iter().map(|cm| play_claw_machine(cm)).sum()
+    claw_machines.iter().map(play_claw_machine).sum()
 }
 
 #[cfg(test)]

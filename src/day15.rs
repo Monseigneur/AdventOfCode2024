@@ -1,7 +1,5 @@
 use std::ops::Range;
 
-use utilities;
-
 use crate::day6::Point;
 
 const DAY: usize = 15;
@@ -76,7 +74,7 @@ fn move_robot(position: &Point, direction: char, grid: &mut Grid) -> Point {
     let next_points = get_points_in_direction(position, direction, grid);
 
     if next_points.is_empty() {
-        return position.clone();
+        return *position;
     }
 
     let box_count = next_points
@@ -85,7 +83,7 @@ fn move_robot(position: &Point, direction: char, grid: &mut Grid) -> Point {
         .count();
 
     if box_count == next_points.len() {
-        return position.clone();
+        return *position;
     }
 
     // There is space, so try to push the boxes ahead if needed.
@@ -97,8 +95,7 @@ fn move_robot(position: &Point, direction: char, grid: &mut Grid) -> Point {
 
     grid[next_point.row][next_point.col] = '.';
 
-    for i in 1..next_points.len() {
-        let point = &next_points[i];
+    for point in next_points.iter().skip(1) {
         if grid[point.row][point.col] == '.' {
             grid[point.row][point.col] = 'O';
             break;
@@ -168,12 +165,10 @@ fn get_points_iter(
         } else {
             Box::new(row_range.into_iter())
         }
+    } else if rev_iter {
+        Box::new(col_range.into_iter().rev())
     } else {
-        if rev_iter {
-            Box::new(col_range.into_iter().rev())
-        } else {
-            Box::new(col_range.into_iter())
-        }
+        Box::new(col_range.into_iter())
     };
 
     iter.map(move |val| {

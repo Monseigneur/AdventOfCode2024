@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use utilities;
-
 const DAY: usize = 11;
 
 pub fn run() {

@@ -1,5 +1,3 @@
-use utilities;
-
 const DAY: usize = 17;
 
 pub fn run() {
@@ -50,7 +48,7 @@ impl Computer {
 
         match opcode {
             0 => self.a = self.dv(combo_operand),
-            1 => self.b = self.b ^ operand,
+            1 => self.b ^=operand,
             2 => self.b = combo_operand % 8,
             3 => {
                 if self.a != 0 {
@@ -62,7 +60,7 @@ impl Computer {
                     }
                 }
             }
-            4 => self.b = self.b ^ self.c,
+            4 => self.b ^= self.c,
             5 => self.output.push(combo_operand % 8),
             6 => self.b = self.dv(combo_operand),
             7 => self.c = self.dv(combo_operand),
@@ -90,7 +88,7 @@ impl Computer {
     }
 
     fn dv(&self, combo_operand: usize) -> usize {
-        self.a / (2_usize.pow(combo_operand as u32) as usize)
+        self.a / 2_usize.pow(combo_operand as u32)
     }
 
     fn get_output(&self) -> String {
@@ -123,14 +121,14 @@ fn parse_input(contents: &str) -> Computer {
             continue;
         }
 
-        let line_data = line.split(":").skip(1).next().unwrap().trim();
+        let line_data = line.split(':').nth(1).unwrap().trim();
 
         if !done_registers {
             let register = line_data.parse::<usize>().unwrap();
 
             registers.push(register);
         } else {
-            instructions.extend(line_data.split(",").map(|s| s.parse::<usize>().unwrap()));
+            instructions.extend(line_data.split(',').map(|s| s.parse::<usize>().unwrap()));
         }
     }
 
@@ -186,7 +184,7 @@ fn calculate_value_helper(
 
         while computer.step(true) {}
 
-        if let Some(last) = computer.output.iter().next() {
+        if let Some(last) = computer.output.first() {
             if last == &instruction {
                 let result = calculate_value_helper(computer, instructions, current_value, idx + 1);
 

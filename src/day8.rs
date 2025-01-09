@@ -1,7 +1,5 @@
 use std::collections::{HashMap, HashSet};
 
-use utilities;
-
 use crate::day6::Point;
 
 const DAY: usize = 8;
@@ -53,7 +51,7 @@ fn find_antennas(grid: &Grid) -> Antennas {
 fn find_antinodes(grid: &Grid, antennas: &Antennas, resonant: bool) -> usize {
     let mut antinodes = HashSet::new();
 
-    for (_, positions) in antennas {
+    for positions in antennas.values() {
         // Find all pairs of positions.
         for i in 0..(positions.len() - 1) {
             for j in (i + 1)..positions.len() {

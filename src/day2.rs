@@ -1,5 +1,3 @@
-use utilities;
-
 const DAY: usize = 2;
 
 pub fn run() {
@@ -14,17 +12,17 @@ fn part_1(contents: &str) -> usize {
                 .map(|str| str.parse::<usize>().unwrap())
                 .collect::<Vec<usize>>()
         })
-        .filter(check_line)
+        .filter(|line| check_line(line))
         .count()
 }
 
-fn check_line(line: &Vec<usize>) -> bool {
+fn check_line(line: &[usize]) -> bool {
     let mut increasing = None;
 
     for i in 1..line.len() {
         let delta = line[i].abs_diff(line[i - 1]);
 
-        if delta < 1 || delta > 3 {
+        if !(1..=3).contains(&delta) {
             return false;
         }
 
@@ -48,17 +46,17 @@ fn part_2(contents: &str) -> usize {
                 .map(|str| str.parse::<usize>().unwrap())
                 .collect::<Vec<usize>>()
         })
-        .filter(check_line_v2)
+        .filter(|line| check_line_v2(line))
         .count()
 }
 
-fn check_line_v2(line: &Vec<usize>) -> bool {
+fn check_line_v2(line: &[usize]) -> bool {
     if check_line(line) {
         return true;
     }
 
     for skipped_index in 0..line.len() {
-        let mut line2 = line.clone();
+        let mut line2 = line.to_owned();
 
         line2.remove(skipped_index);
 

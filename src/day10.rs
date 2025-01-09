@@ -1,7 +1,5 @@
 use std::collections::{HashSet, VecDeque};
 
-use utilities;
-
 use crate::day6::Point;
 
 const DAY: usize = 10;
@@ -82,7 +80,7 @@ fn calculate_trail_score(trailhead: &Point, map: &TopographicMap, unique_paths: 
     score
 }
 
-pub fn get_neighbors<T>(current: &Point, grid: &Vec<Vec<T>>) -> Vec<Point> {
+pub fn get_neighbors<T>(current: &Point, grid: &[Vec<T>]) -> Vec<Point> {
     let mut neighbors = vec![];
 
     if current.row > 0 {

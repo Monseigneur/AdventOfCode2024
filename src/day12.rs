@@ -1,7 +1,5 @@
 use std::collections::{HashMap, HashSet};
 
-use utilities;
-
 use crate::day10::get_neighbors;
 use crate::day6::Point;
 
@@ -101,10 +99,9 @@ fn find_regions(garden: &Grid) -> HashMap<char, Vec<Region>> {
                         regions[main_region_idx].points.insert(point);
 
                         // All other regions are also adjacent and need to be merged.
-                        for i in 1..adjacent_regions.len() {
-                            let region_idx = adjacent_regions[i];
-                            let points = regions[region_idx].points.clone();
-                            regions[region_idx].points.clear();
+                        for region_idx in adjacent_regions.iter().skip(1) {
+                            let points = regions[*region_idx].points.clone();
+                            regions[*region_idx].points.clear();
                             regions[main_region_idx].points.extend(points);
                         }
                     } else {
@@ -118,7 +115,7 @@ fn find_regions(garden: &Grid) -> HashMap<char, Vec<Region>> {
     region_map
 }
 
-fn calculate_fence_cost(regions: &Vec<Region>, garden: &Grid) -> usize {
+fn calculate_fence_cost(regions: &[Region], garden: &Grid) -> usize {
     regions
         .iter()
         .map(|region| region.area() * region.perimeter(garden))

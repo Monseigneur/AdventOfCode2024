@@ -1,5 +1,3 @@
-use utilities;
-
 const DAY: usize = 9;
 
 pub fn run() {
@@ -120,7 +118,7 @@ fn defragment_sections(section_list: &Vec<Section>) -> Vec<usize> {
     block_list
 }
 
-fn calculate_checksum(block_list: &Vec<usize>) -> usize {
+fn calculate_checksum(block_list: &[usize]) -> usize {
     block_list
         .iter()
         .enumerate()
@@ -140,9 +138,9 @@ fn defragment_sections_v2(section_list: &Vec<Section>) -> Vec<Section> {
 
     for section in section_list {
         if section.file_id.is_some() {
-            file_sections.push(section.clone());
+            file_sections.push(*section);
         } else {
-            empty_sections.push(section.clone());
+            empty_sections.push(*section);
         }
     }
 
@@ -169,7 +167,7 @@ fn defragment_sections_v2(section_list: &Vec<Section>) -> Vec<Section> {
     file_sections
 }
 
-fn calculate_checksum_v2(section_list: &Vec<Section>) -> usize {
+fn calculate_checksum_v2(section_list: &[Section]) -> usize {
     section_list
         .iter()
         .map(|section| {

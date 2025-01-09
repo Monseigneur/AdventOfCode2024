@@ -1,5 +1,3 @@
-use utilities;
-
 const DAY: usize = 7;
 
 pub fn run() {
@@ -20,7 +18,7 @@ fn parse_input(contents: &str) -> Vec<(usize, Vec<usize>)> {
     contents
         .lines()
         .map(|line| {
-            let pieces = line.split(":").collect::<Vec<_>>();
+            let pieces = line.split(':').collect::<Vec<_>>();
             let result = pieces[0].parse::<usize>().unwrap();
             let operands = pieces[1]
                 .split_ascii_whitespace()
@@ -31,18 +29,18 @@ fn parse_input(contents: &str) -> Vec<(usize, Vec<usize>)> {
         .collect()
 }
 
-fn try_evaluate(result: usize, operands: &Vec<usize>) -> bool {
+fn try_evaluate(result: usize, operands: &[usize]) -> bool {
     // Simple brute force way, stopping early if the result is crossed.
     for i in 0..(1 << (operands.len() - 1)) {
         let mut flags = i;
 
         let mut current = operands[0];
 
-        for j in 1..operands.len() {
+        for operand in operands.iter().skip(1) {
             if flags % 2 == 0 {
-                current += operands[j];
+                current += *operand;
             } else {
-                current *= operands[j];
+                current *= *operand;
             }
 
             flags >>= 1;
@@ -70,7 +68,7 @@ fn part_2(contents: &str) -> usize {
         .sum()
 }
 
-fn try_evaluate_v2(result: usize, operands: &Vec<usize>) -> bool {
+fn try_evaluate_v2(result: usize, operands: &[usize]) -> bool {
     // Simple brute force way, stopping early if the result is crossed.
     let num_ops: usize = 3;
 
@@ -81,13 +79,13 @@ fn try_evaluate_v2(result: usize, operands: &Vec<usize>) -> bool {
 
         let mut current = operands[0];
 
-        for j in 1..operands.len() {
+        for operand in operands.iter().skip(1) {
             match flags % num_ops {
-                0 => current += operands[j],
-                1 => current *= operands[j],
+                0 => current += *operand,
+                1 => current *= *operand,
                 2 => {
                     let mut s = current.to_string();
-                    s.push_str(&operands[j].to_string());
+                    s.push_str(&operand.to_string());
 
                     current = s.parse::<usize>().unwrap()
                 }

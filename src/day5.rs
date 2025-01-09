@@ -1,7 +1,5 @@
 use std::collections::{HashMap, HashSet};
 
-use utilities;
-
 const DAY: usize = 5;
 
 pub fn run() {
@@ -38,7 +36,7 @@ fn parse_input(contents: &str) -> (Mapping, Vec<Vec<usize>>) {
         if !done_mapping {
             // Parsing the mapping section.
             let pages = line
-                .split("|")
+                .split('|')
                 .map(|s| s.parse::<usize>().unwrap())
                 .collect::<Vec<usize>>();
 
@@ -55,7 +53,7 @@ fn parse_input(contents: &str) -> (Mapping, Vec<Vec<usize>>) {
         } else {
             // Parsing the updates.
             let pages = line
-                .split(",")
+                .split(',')
                 .map(|s| s.parse::<usize>().unwrap())
                 .collect::<Vec<usize>>();
 
@@ -72,7 +70,7 @@ fn validate_updates(update: &Vec<usize>, mapping: &Mapping) -> Option<usize> {
     for page in update {
         // Just need to check that this page is after all pages I have already seen.
         if let Some(pages_after) = mapping.get(page) {
-            if seen_pages.intersection(&pages_after).count() != 0 {
+            if seen_pages.intersection(pages_after).count() != 0 {
                 return None;
             }
         }
@@ -89,7 +87,7 @@ fn part_2(contents: &str) -> usize {
     let mut middle_sum = 0;
 
     for update in updates {
-        if let Some(_) = validate_updates(&update, &mapping) {
+        if validate_updates(&update, &mapping).is_some() {
             continue;
         }
 
@@ -111,7 +109,7 @@ fn validate_updates_v2(update: &Vec<usize>, mapping: &Mapping) -> Option<usize> 
     for page in update {
         if let Some(pages_after) = mapping.get(page) {
             let intersection = seen_pages
-                .intersection(&pages_after)
+                .intersection(pages_after)
                 .collect::<HashSet<_>>();
 
             if intersection.is_empty() {

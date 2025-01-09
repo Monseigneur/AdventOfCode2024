@@ -1,5 +1,3 @@
-use utilities;
-
 const DAY: usize = 22;
 
 pub fn run() {
@@ -35,9 +33,7 @@ fn calculate_secret_value(initial: usize, iterations: usize) -> usize {
 fn get_next_value(val: usize) -> usize {
     let val = (val ^ (val * 64)) % 16777216;
     let val = (val ^ (val / 32)) % 16777216;
-    let val = (val ^ (val * 2048)) % 16777216;
-
-    val
+    (val ^ (val * 2048)) % 16777216
 }
 
 fn part_2(contents: &str) -> usize {

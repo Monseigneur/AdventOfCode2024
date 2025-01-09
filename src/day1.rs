@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use utilities;
-
 const DAY: usize = 1;
 
 pub fn run() {
@@ -23,7 +21,7 @@ fn part_1(contents: &str) -> usize {
     right.sort();
 
     left.into_iter()
-        .zip(right.into_iter())
+        .zip(right)
         .fold(0, |acc, (left_val, right_val)| {
             acc + left_val.abs_diff(right_val)
         })

@@ -1,5 +1,3 @@
-use utilities;
-
 const DAY: usize = 3;
 
 pub fn run() {
@@ -7,7 +5,7 @@ pub fn run() {
 }
 
 fn part_1(contents: &str) -> usize {
-    const PREFIX: &'static str = "mul(";
+    const PREFIX: &str = "mul(";
 
     let mut total_value = 0;
     let mut cursor = contents;
@@ -26,20 +24,20 @@ fn part_1(contents: &str) -> usize {
 }
 
 fn check_value(cursor: &str) -> (usize, Option<usize>) {
-    if let Some(close_position) = cursor.find(")") {
+    if let Some(close_position) = cursor.find(')') {
         let number_contents = &cursor[..close_position];
 
-        let pieces: Vec<&str> = number_contents.split(",").collect();
+        let pieces: Vec<&str> = number_contents.split(',').collect();
 
         if pieces.len() == 2 {
             let first_val = parse_num(pieces[0]);
             let second_val = parse_num(pieces[1]);
 
-            if first_val.is_some() && second_val.is_some() {
+            if let (Some(first_val), Some(second_val)) = (first_val, second_val) {
                 return (
                     close_position + 1,
-                    Some(first_val.unwrap() * second_val.unwrap()),
-                );
+                    Some(first_val * second_val)
+                )
             }
         }
     }
@@ -48,7 +46,7 @@ fn check_value(cursor: &str) -> (usize, Option<usize>) {
 }
 
 fn parse_num(s: &str) -> Option<usize> {
-    if s.len() == 0 || s.len() > 3 {
+    if s.is_empty() || s.len() > 3 {
         return None;
     }
 
@@ -56,9 +54,9 @@ fn parse_num(s: &str) -> Option<usize> {
 }
 
 fn part_2(contents: &str) -> usize {
-    const MUL_PREFIX: &'static str = "mul(";
-    const DO_TOKEN: &'static str = "do()";
-    const DONT_TOKEN: &'static str = "don't()";
+    const MUL_PREFIX: &str = "mul(";
+    const DO_TOKEN: &str = "do()";
+    const DONT_TOKEN: &str = "don't()";
 
     let mut total_value = 0;
     let mut cursor = contents;
@@ -126,7 +124,7 @@ fn part_2(contents: &str) -> usize {
     total_value
 }
 
-fn get_closest(token_offsets: &Vec<Option<usize>>) -> Option<(usize, usize)> {
+fn get_closest(token_offsets: &[Option<usize>]) -> Option<(usize, usize)> {
     let mut best = None;
 
     for (idx, data) in token_offsets.iter().enumerate() {

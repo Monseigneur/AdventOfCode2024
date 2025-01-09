@@ -1,7 +1,5 @@
 use std::collections::HashSet;
 
-use utilities;
-
 const DAY: usize = 6;
 
 pub fn run() {
@@ -110,7 +108,7 @@ fn walk_path(starting_position: Point, grid: &Grid) -> HashSet<Point> {
     let mut current = starting_position;
     let mut facing = 0;
 
-    while let Some((next_position, next_facing)) = get_next_position(&current, facing, &grid) {
+    while let Some((next_position, next_facing)) = get_next_position(&current, facing, grid) {
         visited.insert(next_position);
 
         current = next_position;
@@ -156,7 +154,7 @@ fn single_walk(starting_position: Point, grid: &Grid) -> bool {
     let mut current = starting_position;
     let mut facing = 0;
 
-    while let Some((next_position, next_facing)) = get_next_position(&current, facing, &grid) {
+    while let Some((next_position, next_facing)) = get_next_position(&current, facing, grid) {
         let new_position = (next_position, next_facing);
 
         if visited.contains(&new_position) {
