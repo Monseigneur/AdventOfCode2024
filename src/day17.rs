@@ -48,7 +48,7 @@ impl Computer {
 
         match opcode {
             0 => self.a = self.dv(combo_operand),
-            1 => self.b ^=operand,
+            1 => self.b ^= operand,
             2 => self.b = combo_operand % 8,
             3 => {
                 if self.a != 0 {

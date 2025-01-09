@@ -34,10 +34,7 @@ fn check_value(cursor: &str) -> (usize, Option<usize>) {
             let second_val = parse_num(pieces[1]);
 
             if let (Some(first_val), Some(second_val)) = (first_val, second_val) {
-                return (
-                    close_position + 1,
-                    Some(first_val * second_val)
-                )
+                return (close_position + 1, Some(first_val * second_val));
             }
         }
     }

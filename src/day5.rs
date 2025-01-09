@@ -108,9 +108,7 @@ fn validate_updates_v2(update: &Vec<usize>, mapping: &Mapping) -> Option<usize> 
 
     for page in update {
         if let Some(pages_after) = mapping.get(page) {
-            let intersection = seen_pages
-                .intersection(pages_after)
-                .collect::<HashSet<_>>();
+            let intersection = seen_pages.intersection(pages_after).collect::<HashSet<_>>();
 
             if intersection.is_empty() {
                 adjusted.push(*page);
