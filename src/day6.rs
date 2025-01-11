@@ -85,13 +85,9 @@ fn get_next_position(current: &Point, facing: usize, grid: &Grid) -> Option<(Poi
         _ => Some(current.col),
     };
 
-    if next_row.is_none() || next_col.is_none() {
-        // We walked off the edge.
+    let (Some(next_row), Some(next_col)) = (next_row, next_col) else {
         return None;
-    }
-
-    let next_row = next_row.unwrap();
-    let next_col = next_col.unwrap();
+    };
 
     if grid[next_row][next_col] == '#' {
         // Obstacle, need to turn.
@@ -119,40 +115,46 @@ fn walk_path(starting_position: Point, grid: &Grid) -> HashSet<Point> {
 }
 
 fn part_2(contents: &str) -> usize {
-    // Crappy brute force way
     let (mut grid, starting_position) = parse_input(contents);
 
-    let visited = walk_path(starting_position, &grid);
+    walk_path_v2(starting_position, &mut grid)
+}
+
+fn walk_path_v2(starting_position: Point, grid: &mut Grid) -> usize {
+    let mut current = starting_position;
+    let mut facing = 0;
+
+    let mut visited = HashSet::new();
 
     let mut count = 0;
 
-    for row in 0..grid.len() {
-        for col in 0..grid[0].len() {
-            // Set a temporary obstacle, but only if there wasn't something there and
-            // it was actually reached on the path.
-            if grid[row][col] != '.' || !visited.contains(&Point::new(row, col)) {
-                continue;
-            }
+    while let Some((next_position, next_facing)) = get_next_position(&current, facing, grid) {
+        // If the facing is the same way, pretend first we had a block there.
+        if next_facing == facing && !visited.contains(&next_position) {
+            grid[next_position.row][next_position.col] = '#';
 
-            grid[row][col] = '#';
-
-            if single_walk(starting_position, &grid) {
+            if single_walk(current, facing, grid) {
                 count += 1;
             }
 
-            grid[row][col] = '.';
+            grid[next_position.row][next_position.col] = '.';
         }
+
+        visited.insert(next_position);
+
+        current = next_position;
+        facing = next_facing;
     }
 
     count
 }
 
-fn single_walk(starting_position: Point, grid: &Grid) -> bool {
+fn single_walk(starting_position: Point, starting_facing: usize, grid: &Grid) -> bool {
     let mut visited = HashSet::new();
-    visited.insert((starting_position, 0));
+    visited.insert((starting_position, starting_facing));
 
     let mut current = starting_position;
-    let mut facing = 0;
+    let mut facing = starting_facing;
 
     while let Some((next_position, next_facing)) = get_next_position(&current, facing, grid) {
         let new_position = (next_position, next_facing);
