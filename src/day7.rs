@@ -9,7 +9,7 @@ fn part_1(contents: &str) -> usize {
 
     equations
         .iter()
-        .filter(|(result, operands)| try_evaluate(*result, operands))
+        .filter(|(result, operands)| try_evaluate(*result, operands, false))
         .map(|(result, _)| result)
         .sum()
 }
@@ -29,80 +29,83 @@ fn parse_input(contents: &str) -> Vec<(usize, Vec<usize>)> {
         .collect()
 }
 
-fn try_evaluate(result: usize, operands: &[usize]) -> bool {
-    // Simple brute force way, stopping early if the result is crossed.
-    for i in 0..(1 << (operands.len() - 1)) {
-        let mut flags = i;
-
-        let mut current = operands[0];
-
-        for operand in operands.iter().skip(1) {
-            if flags % 2 == 0 {
-                current += *operand;
-            } else {
-                current *= *operand;
-            }
-
-            flags >>= 1;
-
-            if current > result {
-                break;
-            }
-        }
-
-        if current == result {
-            return true;
-        }
-    }
-
-    false
-}
-
 fn part_2(contents: &str) -> usize {
     let equations = parse_input(contents);
 
     equations
         .iter()
-        .filter(|(result, operands)| try_evaluate_v2(*result, operands))
+        .filter(|(result, operands)| try_evaluate(*result, operands, true))
         .map(|(result, _)| result)
         .sum()
 }
 
-fn try_evaluate_v2(result: usize, operands: &[usize]) -> bool {
-    // Simple brute force way, stopping early if the result is crossed.
-    let num_ops: usize = 3;
+enum Operation {
+    Add,
+    Multiply,
+    Concatenate,
+}
 
-    let max_val = num_ops.pow((operands.len() - 1) as u32);
+fn try_evaluate(result: usize, operands: &[usize], use_concatenation: bool) -> bool {
+    let all_operations = [Operation::Concatenate, Operation::Multiply, Operation::Add];
 
-    for i in 0..max_val {
-        let mut flags = i;
+    let available_operations = if use_concatenation {
+        &all_operations[..]
+    } else {
+        &all_operations[1..]
+    };
 
-        let mut current = operands[0];
+    try_evaluate_helper(result, operands, available_operations)
+}
 
-        for operand in operands.iter().skip(1) {
-            match flags % num_ops {
-                0 => current += *operand,
-                1 => current *= *operand,
-                2 => {
-                    let shift_val = 10_usize.pow(operand.ilog10() + 1);
-                    current = current * shift_val + operand;
-                }
-                _ => unreachable!("Illegal operation!"),
-            }
+fn try_evaluate_helper(
+    value: usize,
+    operands: &[usize],
+    available_operations: &[Operation],
+) -> bool {
+    if operands.is_empty() {
+        return value == 0;
+    }
 
-            flags /= num_ops;
+    let last_idx = operands.len() - 1;
+    let operand = operands[last_idx];
+    let next_operands = &operands[..last_idx];
 
-            if current > result {
-                break;
-            }
-        }
+    for operation in available_operations {
+        let Some(new_value) = apply_operation(value, operand, operation) else {
+            continue;
+        };
 
-        if current == result {
+        if try_evaluate_helper(new_value, next_operands, available_operations) {
             return true;
         }
     }
 
     false
+}
+
+fn apply_operation(value: usize, operand: usize, operation: &Operation) -> Option<usize> {
+    match operation {
+        Operation::Add if value >= operand => Some(value - operand),
+        Operation::Multiply if value % operand == 0 => Some(value / operand),
+        Operation::Concatenate => remove_concatenation(value, operand),
+        _ => None,
+    }
+}
+
+fn remove_concatenation(value: usize, operand: usize) -> Option<usize> {
+    let mut value = value;
+    let mut operand = operand;
+
+    while operand != 0 {
+        if operand % 10 != value % 10 {
+            return None;
+        }
+
+        operand /= 10;
+        value /= 10;
+    }
+
+    Some(value)
 }
 
 #[cfg(test)]
