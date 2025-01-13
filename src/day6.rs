@@ -150,27 +150,46 @@ fn walk_path_v2(starting_position: Point, grid: &mut Grid) -> usize {
 }
 
 fn single_walk(starting_position: Point, starting_facing: usize, grid: &Grid) -> bool {
-    let mut visited = HashSet::new();
-    visited.insert((starting_position, starting_facing));
+    // Use the tortoise and hare cycle detection algorithm.
+    let mut current_hare = starting_position;
+    let mut facing_hare = starting_facing;
 
-    let mut current = starting_position;
-    let mut facing = starting_facing;
+    let mut current_tortoise = starting_position;
+    let mut facing_tortoise = starting_facing;
 
-    while let Some((next_position, next_facing)) = get_next_position(&current, facing, grid) {
-        let new_position = (next_position, next_facing);
+    loop {
+        let Some((next_position_hare, next_facing_hare)) =
+            get_next_position(&current_hare, facing_hare, grid)
+        else {
+            return false;
+        };
 
-        if visited.contains(&new_position) {
-            // Found loop.
+        current_hare = next_position_hare;
+        facing_hare = next_facing_hare;
+
+        let Some((next_position_hare, next_facing_hare)) =
+            get_next_position(&current_hare, facing_hare, grid)
+        else {
+            return false;
+        };
+
+        current_hare = next_position_hare;
+        facing_hare = next_facing_hare;
+
+        // The tortoise can be advanced as well, and it should always be valid (since the hare already went past this point).
+        let Some((next_position_tortoise, next_facing_tortoise)) =
+            get_next_position(&current_tortoise, facing_tortoise, grid)
+        else {
+            panic!("Tortoise shouldn't have fallen off the grid!");
+        };
+
+        current_tortoise = next_position_tortoise;
+        facing_tortoise = next_facing_tortoise;
+
+        if current_hare == current_tortoise && facing_hare == facing_tortoise {
             return true;
         }
-
-        visited.insert(new_position);
-
-        current = next_position;
-        facing = next_facing;
     }
-
-    false
 }
 
 #[cfg(test)]
@@ -199,7 +218,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 
