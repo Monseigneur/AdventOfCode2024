@@ -104,8 +104,8 @@ Day 19:
       finish, but came up with some memoization algorithm.
 
 Day 20:
-    - Start
-    - part1:
+    - Start 2025-1-14 8:13pm
+    - part1: 2025-1-14 9:29pm [1381, 17.778ms] (28290)
     - part2:
 
 Day 21:
