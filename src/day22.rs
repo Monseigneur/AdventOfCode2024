@@ -1,5 +1,3 @@
-use std::collections::{HashMap, HashSet};
-
 const DAY: usize = 22;
 
 const ITERATIONS: usize = 2000;
@@ -52,28 +50,27 @@ fn part_2(contents: &str) -> usize {
         .map(|price_table| build_deltas(price_table))
         .collect::<Vec<_>>();
 
-    let mut results = HashMap::new();
+    let mut results = vec![0; 19 * 19 * 19 * 19];
 
     for (idx, delta_table) in deltas.iter().enumerate() {
-        let mut seen_patterns = HashSet::new();
+        let mut seen_patterns = vec![false; 19 * 19 * 19 * 19];
 
         for (i, pattern) in delta_table.windows(4).enumerate() {
-            if seen_patterns.contains(pattern) {
+            let pattern_code = convert_pattern(pattern);
+
+            if seen_patterns[pattern_code] {
                 continue;
             }
 
-            seen_patterns.insert(pattern);
+            seen_patterns[pattern_code] = true;
 
             let price = prices[idx][i + pattern.len()];
 
-            results
-                .entry(pattern)
-                .and_modify(|total_price| *total_price += price)
-                .or_insert(price);
+            results[pattern_code] += price;
         }
     }
 
-    *results.values().max().unwrap()
+    *results.iter().max().unwrap()
 }
 
 fn build_prices(initial_value: usize, length: usize) -> Vec<usize> {
@@ -96,6 +93,18 @@ fn build_deltas(prices: &[usize]) -> Vec<isize> {
     }
 
     delta_table
+}
+
+fn convert_pattern(pattern: &[isize]) -> usize {
+    let mut value = 0;
+
+    for delta in pattern {
+        // Prices are 0-9, so deltas are -9 to 9
+        value *= 19;
+        value += (delta + 9) as usize;
+    }
+
+    value
 }
 
 #[cfg(test)]
