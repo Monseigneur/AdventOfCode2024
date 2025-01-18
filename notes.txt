@@ -116,7 +116,9 @@ Day 21:
 Day 22:
     - Start 2025-1-6 9:02pm
     - part1: 2025-1-6 9:14pm [18317943467, 32.28ms] (26440)
-    - part2:
+    - part2: 2025-1-17 10:32 [2018, 6.56s] (23564), this one was very difficult. I had an algorithm that almost
+      worked, but I spent a long time debugging why it didn't work before realizing what went wrong after
+      comparing with answers on reddit.
 
 Day 23:
     - Start
