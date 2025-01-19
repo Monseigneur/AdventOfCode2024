@@ -61,7 +61,8 @@ Day 11:
 Day 12:
     - Start 2024-12-25 10:56pm
     - part1: 2024-12-27 5:05pm [1434856, 482.5ms] (53351)
-    - part2:
+    - part2: 2025-1-18 7:51pm [891106, 430.474ms] (44652), took a while to think about it, and
+      this first version is quite bad.
 
 Day 13:
     - Start 2024-12-27 5:54pm
