@@ -122,8 +122,8 @@ Day 22:
       comparing with answers on reddit. Made some improvements by using a vector instead of hash tables.
 
 Day 23:
-    - Start
-    - part1:
+    - Start 2025-1-20 7:07pm
+    - part1: 2025-1-20 7:46pm [1200, 74.305ms] (25862)
     - part2:
 
 Day 24:
