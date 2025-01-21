@@ -124,7 +124,7 @@ Day 22:
 Day 23:
     - Start 2025-1-20 7:07pm
     - part1: 2025-1-20 7:46pm [1200, 74.305ms] (25862)
-    - part2:
+    - part2: 2025-1-20 8:23pm [ag,gh,hh,iv,jx,nq,oc,qm,rb,sm,vm,wu,zr, 7.825s] (23353), super slow algorithm.
 
 Day 24:
     - Start
