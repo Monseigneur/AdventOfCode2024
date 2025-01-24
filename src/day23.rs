@@ -95,11 +95,15 @@ fn find_biggest_group<'x>(
         .map(|triple| HashSet::from_iter(triple.iter().cloned()))
         .collect();
 
-    groups
+    let mut group = groups
         .iter()
         .map(|group| expand_group(graph, group))
         .max_by(|a, b| a.len().cmp(&b.len()))
-        .unwrap()
+        .unwrap();
+
+    group.sort();
+
+    group
 }
 
 fn expand_group<'x>(
@@ -114,20 +118,12 @@ fn expand_group<'x>(
     let mut current_group = Vec::from_iter(group.iter().cloned());
 
     for other in others.iter() {
-        let mut connected = true;
-        for item in &current_group {
-            if !graph.get(item).unwrap().contains(&**other) {
-                connected = false;
-                break;
-            }
-        }
+        let other_connected = graph.get(&**other).unwrap();
 
-        if connected {
+        if current_group.iter().all(|item| other_connected.contains(item)) {
             current_group.push(other);
         }
     }
-
-    current_group.sort();
 
     current_group
 }
