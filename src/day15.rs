@@ -1,4 +1,7 @@
-use std::ops::Range;
+use std::{
+    collections::{HashSet, VecDeque},
+    ops::Range,
+};
 
 use crate::day6::Point;
 
@@ -185,7 +188,7 @@ fn find_boxes(grid: &Grid) -> Vec<Point> {
         .enumerate()
         .flat_map(|(row, row_data)| {
             row_data.iter().enumerate().filter_map(move |(col, c)| {
-                if *c == 'O' {
+                if *c == 'O' || *c == '[' {
                     Some(Point::new(row, col))
                 } else {
                     None
@@ -196,7 +199,161 @@ fn find_boxes(grid: &Grid) -> Vec<Point> {
 }
 
 fn part_2(contents: &str) -> usize {
-    0
+    let (grid, moves) = parse_input(contents);
+
+    let grid = expand_grid(grid);
+
+    let grid = apply_moves_v2(grid, &moves);
+    let boxes = find_boxes(&grid);
+
+    boxes.iter().map(|point| 100 * point.row + point.col).sum()
+}
+
+fn expand_grid(grid: Grid) -> Grid {
+    grid.iter()
+        .map(|row| {
+            row.iter()
+                .flat_map(|c| match c {
+                    'O' => ['[', ']'],
+                    '@' => ['@', '.'],
+                    _ => [*c, *c],
+                })
+                .collect()
+        })
+        .collect()
+}
+
+fn apply_moves_v2(start_grid: Grid, moves: &Vec<char>) -> Grid {
+    let mut grid = start_grid;
+
+    let mut robot_position = find_robot(&grid);
+    grid[robot_position.row][robot_position.col] = '.';
+
+    for robot_move in moves {
+        robot_position = move_robot_v2(&robot_position, *robot_move, &mut grid);
+    }
+
+    grid
+}
+
+fn get_point_in_direction(position: &Point, direction: char, grid: &Grid) -> Option<Point> {
+    let last_row = grid.len() - 1;
+    let last_col = grid[0].len() - 1;
+
+    match direction {
+        '^' if position.row > 0 => Some(Point::new(position.row - 1, position.col)),
+        '>' if position.col < last_col => Some(Point::new(position.row, position.col + 1)),
+        'v' if position.row < last_row => Some(Point::new(position.row + 1, position.col)),
+        '<' if position.col > 0 => Some(Point::new(position.row, position.col - 1)),
+        _ => None,
+    }
+}
+
+fn move_robot_v2(position: &Point, direction: char, grid: &mut Grid) -> Point {
+    let Some(next_point) = get_point_in_direction(position, direction, grid) else {
+        return *position;
+    };
+
+    let next_position_item = grid[next_point.row][next_point.col];
+
+    // If there is a free space or a wall, then already know what to do.
+    if next_position_item == '.' {
+        return next_point;
+    } else if next_position_item == '#' {
+        return *position;
+    }
+
+    // If it's a box, try to move it and any other boxes on the other side of it.
+    let box_position = match next_position_item {
+        '[' => next_point,
+        ']' => Point::new(next_point.row, next_point.col - 1),
+        _ => unreachable!(),
+    };
+
+    if let Some(boxes) = find_boxes_to_move(grid, &box_position, direction) {
+        move_boxes(grid, direction, &boxes);
+
+        next_point
+    } else {
+        *position
+    }
+}
+
+fn find_boxes_to_move(
+    grid: &Grid,
+    box_position: &Point,
+    direction: char,
+) -> Option<HashSet<Point>> {
+    // Ran into a box, try to move them.
+    let mut boxes = HashSet::new();
+
+    let mut box_queue = VecDeque::new();
+    box_queue.push_back(*box_position);
+
+    while let Some(box_position) = box_queue.pop_front() {
+        if !boxes.insert(box_position) {
+            continue;
+        }
+
+        let next_position = match direction {
+            '^' | 'v' | '<' => get_point_in_direction(&box_position, direction, grid),
+            '>' => get_point_in_direction(
+                &Point::new(box_position.row, box_position.col + 1),
+                direction,
+                grid,
+            ),
+            _ => unreachable!(),
+        };
+
+        let Some(next_position) = next_position else {
+            // Off the edge, can't push the boxes.
+            return None;
+        };
+
+        match grid[next_position.row][next_position.col] {
+            '#' => return None,
+            '[' => box_queue.push_back(next_position),
+            ']' => box_queue.push_back(Point::new(next_position.row, next_position.col - 1)),
+            _ => {}
+        }
+
+        if direction == '^' || direction == 'v' {
+            // For up and down, need to also consider the point above or below the right side of the box.
+            let other_next_position = Point::new(next_position.row, next_position.col + 1);
+
+            match grid[other_next_position.row][other_next_position.col] {
+                '#' => return None,
+                '[' => box_queue.push_back(other_next_position),
+                _ => {}
+            }
+        }
+    }
+
+    Some(boxes)
+}
+
+fn move_boxes(grid: &mut Grid, direction: char, boxes: &HashSet<Point>) {
+    let (row_offset, col_offset) = match direction {
+        '^' => (-1, 0),
+        '>' => (0, 1),
+        'v' => (1, 0),
+        '<' => (0, -1),
+        _ => unreachable!(),
+    };
+
+    // First clear out old boxes, and then fill in the new positions.
+    for box_point in boxes.iter() {
+        grid[box_point.row][box_point.col] = '.';
+        grid[box_point.row][box_point.col + 1] = '.';
+    }
+
+    for box_point in boxes.iter() {
+        let new_row = (box_point.row as isize + row_offset) as usize;
+        let new_col = (box_point.col as isize + col_offset) as usize;
+
+        grid[new_row][new_col] = '[';
+        grid[new_row][new_col + 1] = ']';
+    }
 }
 
 #[cfg(test)]
@@ -228,13 +385,20 @@ mod tests {
     fn test_example_part_2() {
         let contents = utilities::read_file_data(DAY, "example.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 9021);
+    }
+
+    #[test]
+    fn test_example3_part_2() {
+        let contents = utilities::read_file_data(DAY, "example3.txt");
+
+        assert_eq!(part_2(&contents), 618);
     }
 
     #[test]
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 1524905);
     }
 }
