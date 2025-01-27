@@ -78,12 +78,13 @@ Day 14:
 Day 15:
     - Start 2024-12-30 4:25pm
     - part1: 2024-12-30 9:21pm [1495147, 28.801ms] (42470)
-    - part2:
+    - part2: 2025-1-26 2:08pm [1524905, 6.839ms] (34676), took a while to get the algorithm right,
+      was off by one in many places.
 
 Day 16:
     - Start 2025-1-5 6:25pm
     - part1: 2025-1-5 7:03pm [104516, 31.96ms] (35136)
-    - part2:
+    - part2: 2025-1-26 5:36pm [545, 73.541s] (30207), algorithm is super slow.
 
 Day 17:
     - Start 2024-12-31 5:08pm

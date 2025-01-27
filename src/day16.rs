@@ -1,4 +1,4 @@
-use std::collections::{BinaryHeap, HashSet};
+use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
 
 use crate::day10::get_neighbors;
 use crate::day18::MinHeapNode;
@@ -111,8 +111,103 @@ fn direction_to_point(start: &Point, other: &Point) -> Direction {
     }
 }
 
-fn part_2(_contents: &str) -> usize {
-    0
+fn part_2(contents: &str) -> usize {
+    let (grid, start, end) = parse_input(contents);
+
+    find_shortest_path_v2(&grid, &start, &end)
+}
+
+fn find_shortest_path_v2(grid: &Grid, start: &Point, end: &Point) -> usize {
+    let mut queue = BinaryHeap::new();
+    let mut visited = HashSet::new();
+    let mut parents: HashMap<(Point, usize), HashSet<(Point, usize)>> = HashMap::new(); //<(Point, usize), Point>
+
+    let mut best_score = None;
+
+    queue.push(MinHeapNode::new(0, (*start, Direction::East, None)));
+
+    while let Some(MinHeapNode(score, (point, direction, parent_info))) = queue.pop() {
+        if let Some(parent) = parent_info {
+            parents
+                .entry((point, score))
+                .and_modify(|p| {
+                    p.insert(parent);
+                })
+                .or_insert(HashSet::from_iter([parent]));
+        }
+
+        if point == *end {
+            if let Some(best) = best_score {
+                if score > best {
+                    // No more shortest paths to the end, can stop searching
+                    break;
+                }
+            } else {
+                best_score = Some(score);
+            }
+
+            continue;
+        }
+
+        if best_score.is_some_and(|best| best <= score) {
+            continue;
+        }
+
+        if !visited.insert((point, score)) {
+            continue;
+        }
+
+        for neighbor in get_neighbors(&point, grid) {
+            if let Some((parent, _)) = parent_info {
+                if neighbor == parent {
+                    continue;
+                }
+            }
+
+            if grid[neighbor.row][neighbor.col] == '#' {
+                continue;
+            }
+
+            let new_direction = direction_to_point(&point, &neighbor);
+
+            let adjusted_score = if new_direction == direction {
+                score + 1
+            } else if new_direction == direction.opposite() {
+                score + 2000 + 1
+            } else {
+                score + 1000 + 1
+            };
+
+            queue.push(MinHeapNode::new(
+                adjusted_score,
+                (neighbor, new_direction, Some((point, score))),
+            ));
+        }
+    }
+
+    count_shortest_path_spaces(&parents, end, best_score.unwrap())
+}
+
+fn count_shortest_path_spaces(
+    parents: &HashMap<(Point, usize), HashSet<(Point, usize)>>,
+    end: &Point,
+    best_score: usize,
+) -> usize {
+    let mut queue = VecDeque::new();
+
+    let mut spaces = HashSet::new();
+
+    queue.push_back((*end, best_score));
+
+    while let Some((point, score)) = queue.pop_back() {
+        spaces.insert(point);
+
+        if let Some(point_parents) = parents.get(&(point, score)) {
+            queue.extend(point_parents);
+        }
+    }
+
+    spaces.len()
 }
 
 #[cfg(test)]
@@ -144,13 +239,20 @@ mod tests {
     fn test_example_part_2() {
         let contents = utilities::read_file_data(DAY, "example.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 45);
+    }
+
+    #[test]
+    fn test_example2_part_2() {
+        let contents = utilities::read_file_data(DAY, "example2.txt");
+
+        assert_eq!(part_2(&contents), 64);
     }
 
     #[test]
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 545);
     }
 }
