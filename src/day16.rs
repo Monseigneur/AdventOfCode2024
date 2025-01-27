@@ -40,7 +40,7 @@ fn parse_input(contents: &str) -> (Grid, Point, Point) {
     (grid, start.unwrap(), end.unwrap())
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq, Hash, Copy, Clone)]
 enum Direction {
     North,
     East,
@@ -119,8 +119,8 @@ fn part_2(contents: &str) -> usize {
 
 fn find_shortest_path_v2(grid: &Grid, start: &Point, end: &Point) -> usize {
     let mut queue = BinaryHeap::new();
-    let mut visited = HashSet::new();
-    let mut parents: HashMap<(Point, usize), HashSet<(Point, usize)>> = HashMap::new(); //<(Point, usize), Point>
+    let mut visited: HashMap<(Point, Direction), usize> = HashMap::new();
+    let mut parents: HashMap<(Point, usize), HashSet<(Point, usize)>> = HashMap::new();
 
     let mut best_score = None;
 
@@ -136,6 +136,8 @@ fn find_shortest_path_v2(grid: &Grid, start: &Point, end: &Point) -> usize {
                 .or_insert(HashSet::from_iter([parent]));
         }
 
+        visited.insert((point, direction), score);
+
         if point == *end {
             if let Some(best) = best_score {
                 if score > best {
@@ -149,21 +151,7 @@ fn find_shortest_path_v2(grid: &Grid, start: &Point, end: &Point) -> usize {
             continue;
         }
 
-        if best_score.is_some_and(|best| best <= score) {
-            continue;
-        }
-
-        if !visited.insert((point, score)) {
-            continue;
-        }
-
         for neighbor in get_neighbors(&point, grid) {
-            if let Some((parent, _)) = parent_info {
-                if neighbor == parent {
-                    continue;
-                }
-            }
-
             if grid[neighbor.row][neighbor.col] == '#' {
                 continue;
             }
@@ -177,6 +165,10 @@ fn find_shortest_path_v2(grid: &Grid, start: &Point, end: &Point) -> usize {
             } else {
                 score + 1000 + 1
             };
+
+            if visited.get(&(neighbor, new_direction)).is_some_and(|best| *best < adjusted_score) {
+                continue;
+            }
 
             queue.push(MinHeapNode::new(
                 adjusted_score,
