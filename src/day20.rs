@@ -13,7 +13,7 @@ fn part_1(contents: &str) -> usize {
     let (grid, start, end) = parse_input(contents);
     let distance_table = build_distance_table(&grid, &start, &end);
 
-    count_cheats(&grid, &distance_table, 100)
+    count_cheats(&grid, &distance_table, get_cheat_endpoints, 100)
 }
 
 type Grid = Vec<Vec<char>>;
@@ -65,7 +65,15 @@ fn build_distance_table(grid: &Grid, start: &Point, end: &Point) -> Vec<Point> {
     distance_table
 }
 
-fn count_cheats(grid: &Grid, distance_table: &[Point], threshold: usize) -> usize {
+fn count_cheats<F>(
+    grid: &Grid,
+    distance_table: &[Point],
+    get_endpoints: F,
+    threshold: usize,
+) -> usize
+where
+    F: Fn(&Point, &Grid) -> Vec<Point>,
+{
     let reverse_distance_table: HashMap<Point, usize> = HashMap::from_iter(
         distance_table
             .iter()
@@ -76,28 +84,10 @@ fn count_cheats(grid: &Grid, distance_table: &[Point], threshold: usize) -> usiz
     let mut cheats: HashMap<usize, Vec<Point>> = HashMap::new();
 
     for point in distance_table.iter().rev() {
-        let mut end_points = vec![];
+        let endpoints = get_endpoints(point, grid);
 
-        if point.row >= 2 {
-            end_points.push(Point::new(point.row - 2, point.col));
-        }
-
-        if point.row < grid.len() - 2 {
-            end_points.push(Point::new(point.row + 2, point.col));
-        }
-
-        if point.col >= 2 {
-            end_points.push(Point::new(point.row, point.col - 2));
-        }
-
-        if point.col < grid[0].len() - 2 {
-            end_points.push(Point::new(point.row, point.col + 2));
-        }
-
-        for end in end_points {
-            if let Some(speedup) =
-                calculate_cheat_speedup(grid, &reverse_distance_table, point, &end)
-            {
+        for end in endpoints {
+            if let Some(speedup) = calculate_cheat_speedup(&reverse_distance_table, point, &end) {
                 cheats
                     .entry(speedup)
                     .and_modify(|v| v.push(end))
@@ -113,18 +103,41 @@ fn count_cheats(grid: &Grid, distance_table: &[Point], threshold: usize) -> usiz
         .sum()
 }
 
+fn get_cheat_endpoints(start: &Point, grid: &Grid) -> Vec<Point> {
+    let mut end_points = vec![];
+
+    if start.row >= 2 {
+        if grid[start.row - 1][start.col] == '#' && grid[start.row - 2][start.col] != '#' {
+            end_points.push(Point::new(start.row - 2, start.col));
+        }
+    }
+
+    if start.row < grid.len() - 2 {
+        if grid[start.row + 1][start.col] == '#' && grid[start.row + 2][start.col] != '#' {
+            end_points.push(Point::new(start.row + 2, start.col));
+        }
+    }
+
+    if start.col >= 2 {
+        if grid[start.row][start.col - 1] == '#' && grid[start.row][start.col - 2] != '#' {
+            end_points.push(Point::new(start.row, start.col - 2));
+        }
+    }
+
+    if start.col < grid[0].len() - 2 {
+        if grid[start.row][start.col + 1] == '#' && grid[start.row][start.col + 2] != '#' {
+            end_points.push(Point::new(start.row, start.col + 2));
+        }
+    }
+
+    end_points
+}
+
 fn calculate_cheat_speedup(
-    grid: &Grid,
     reverse_distance_table: &HashMap<Point, usize>,
     start: &Point,
     end: &Point,
 ) -> Option<usize> {
-    let intermediate = Point::new((start.row + end.row) / 2, (start.col + end.col) / 2);
-
-    if grid[intermediate.row][intermediate.col] != '#' || grid[end.row][end.col] == '#' {
-        return None;
-    }
-
     let start_score = reverse_distance_table[start];
     let end_score = reverse_distance_table[end];
 
