@@ -109,7 +109,8 @@ Day 19:
 Day 20:
     - Start 2025-1-14 8:13pm
     - part1: 2025-1-14 9:29pm [1381, 17.778ms] (28290)
-    - part2:
+    - part2: 2025-8-1 10:29pm [982124, 4.649s] (26013), came back to this on 7-31, had an algorithm but realized
+      I misunderstood the problem.
 
 Day 21:
     - Start 2025-1-5 3:36pm
