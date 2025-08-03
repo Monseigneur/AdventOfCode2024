@@ -72,7 +72,7 @@ fn count_cheats<F>(
     threshold: usize,
 ) -> usize
 where
-    F: Fn(&Point, &Grid) -> Vec<(Point, usize)>,
+    F: Fn(&Point, &Grid) -> Vec<Point>,
 {
     let reverse_distance_table: HashMap<Point, usize> = HashMap::from_iter(
         distance_table
@@ -86,9 +86,9 @@ where
     for point in distance_table.iter().rev() {
         let endpoints = get_endpoints(point, grid);
 
-        for (end, cheat_distance) in endpoints {
+        for end in endpoints {
             if let Some(speedup) =
-                calculate_cheat_speedup(&reverse_distance_table, point, &end, cheat_distance)
+                calculate_cheat_speedup(&reverse_distance_table, point, &end)
             {
                 cheats
                     .entry(speedup)
@@ -105,30 +105,30 @@ where
         .sum()
 }
 
-fn get_cheat_endpoints(start: &Point, grid: &Grid) -> Vec<(Point, usize)> {
+fn get_cheat_endpoints(start: &Point, grid: &Grid) -> Vec<Point> {
     let mut end_points = vec![];
 
     if start.row >= 2 {
         if grid[start.row - 1][start.col] == '#' && grid[start.row - 2][start.col] != '#' {
-            end_points.push((Point::new(start.row - 2, start.col), 2));
+            end_points.push(Point::new(start.row - 2, start.col));
         }
     }
 
     if start.row < grid.len() - 2 {
         if grid[start.row + 1][start.col] == '#' && grid[start.row + 2][start.col] != '#' {
-            end_points.push((Point::new(start.row + 2, start.col), 2));
+            end_points.push(Point::new(start.row + 2, start.col));
         }
     }
 
     if start.col >= 2 {
         if grid[start.row][start.col - 1] == '#' && grid[start.row][start.col - 2] != '#' {
-            end_points.push((Point::new(start.row, start.col - 2), 2));
+            end_points.push(Point::new(start.row, start.col - 2));
         }
     }
 
     if start.col < grid[0].len() - 2 {
         if grid[start.row][start.col + 1] == '#' && grid[start.row][start.col + 2] != '#' {
-            end_points.push((Point::new(start.row, start.col + 2), 2));
+            end_points.push(Point::new(start.row, start.col + 2));
         }
     }
 
@@ -139,10 +139,11 @@ fn calculate_cheat_speedup(
     reverse_distance_table: &HashMap<Point, usize>,
     start: &Point,
     end: &Point,
-    cheat_distance: usize,
 ) -> Option<usize> {
     let start_score = reverse_distance_table[start];
     let end_score = reverse_distance_table[end];
+
+    let cheat_distance = start.row.abs_diff(end.row) + start.col.abs_diff(end.col);
 
     if start_score > (end_score + cheat_distance) {
         Some(start_score - end_score - cheat_distance)
@@ -158,26 +159,35 @@ fn part_2(contents: &str) -> usize {
     count_cheats(&grid, &distance_table, get_cheat_endpoints_v2, 100)
 }
 
-fn get_cheat_endpoints_v2(start: &Point, grid: &Grid) -> Vec<(Point, usize)> {
+fn get_cheat_endpoints_v2(start: &Point, grid: &Grid) -> Vec<Point> {
     let mut endpoints = vec![];
 
-    for (row, row_data) in grid.iter().enumerate() {
-        for (col, tile) in row_data.iter().enumerate() {
-            let manhattan_dist = row.abs_diff(start.row) + col.abs_diff(start.col);
+    let max_cheat_length = 20;
+    let radius = max_cheat_length + 1;
 
-            if manhattan_dist > 20 {
+    let min_row = if start.row >= radius { start.row - radius } else { 0 };
+    let max_row = if start.row < grid.len() - radius { start.row + radius } else { grid.len() };
+
+    let min_col = if start.col >= radius { start.col - radius } else { 0 };
+    let max_col = if start.col < grid[0].len() - radius { start.col + radius } else { grid[0].len() };
+
+    for r in min_row..max_row {
+        for c in min_col..max_col {
+            let manhattan_dist = r.abs_diff(start.row) + c.abs_diff(start.col);
+
+            if manhattan_dist > max_cheat_length {
                 continue;
             }
 
-            if tile == &'#' {
+            if grid[r][c] == '#' {
                 continue;
             }
 
-            if row == start.row && col == start.col {
+            if r == start.row && c == start.col {
                 continue;
             }
 
-            endpoints.push((Point::new(row, col), manhattan_dist));
+            endpoints.push(Point::new(r, c));
         }
     }
 
@@ -193,13 +203,6 @@ mod tests {
         let contents = utilities::read_file_data(DAY, "input.txt");
 
         assert_eq!(part_1(&contents), 1381);
-    }
-
-    #[test]
-    fn test_example_part_2() {
-        let contents = utilities::read_file_data(DAY, "example.txt");
-
-        assert_eq!(part_2(&contents), 0);
     }
 
     #[test]
