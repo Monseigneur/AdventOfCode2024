@@ -16,7 +16,7 @@ fn part_1(contents: &str) -> usize {
     codes
         .iter()
         .map(|code| {
-            let input_length = find_shortest_input(code, &numeric_keypad, &robot_keypad);
+            let input_length = find_shortest_input(code, &numeric_keypad, &robot_keypad, 3);
             calculate_complexity_code(code, input_length)
         })
         .sum()
@@ -46,44 +46,33 @@ fn build_button_map(keypad_layout: &str) -> Keypad {
     button_map
 }
 
-fn find_shortest_input(code: &[char], numeric_keypad: &Keypad, robot_keypad: &Keypad) -> usize {
-    let mut first_path = vec![];
-    for i in 0..code.len() {
-        let first_key = if i == 0 { 'A' } else { code[i - 1] };
-        let second_key = code[i];
+fn find_shortest_input(code: &[char], numeric_keypad: &Keypad, robot_keypad: &Keypad, num_robots: usize) -> usize {
+    let mut path = process_keypad(code, &numeric_keypad);
 
-        let path = find_path_v3(first_key, second_key, &numeric_keypad);
-
-        first_path.extend(path.iter());
-        first_path.push('A');
+    for _ in 0..(num_robots - 1) {
+        path = process_keypad(&path, &robot_keypad);
     }
 
-    let mut second_path = vec![];
-    for i in 0..first_path.len() {
-        let first_key = if i == 0 { 'A' } else { first_path[i - 1] };
-        let second_key = first_path[i];
-
-        let path = find_path_v3(first_key, second_key, &robot_keypad);
-
-        second_path.extend(path.iter());
-        second_path.push('A');
-    }
-
-    let mut third_path = vec![];
-    for i in 0..second_path.len() {
-        let first_key = if i == 0 { 'A' } else { second_path[i - 1] };
-        let second_key = second_path[i];
-
-        let path = find_path_v3(first_key, second_key, &robot_keypad);
-
-        third_path.extend(path.iter());
-        third_path.push('A');
-    }
-
-    third_path.len()
+    path.len()
 }
 
-fn find_path_v3(start: char, end: char, keypad: &Keypad) -> Vec<char> {
+fn process_keypad(input_path: &[char], keypad: &Keypad) -> Vec<char> {
+    let mut new_path = vec![];
+
+    for i in 0..input_path.len() {
+        let first_key = if i == 0  { 'A' } else { input_path[i - 1] };
+        let second_key = input_path[i];
+
+        let path = find_path(first_key, second_key, &keypad);
+
+        new_path.extend(path.iter());
+        new_path.push('A');
+    }
+
+    new_path
+}
+
+fn find_path(start: char, end: char, keypad: &Keypad) -> Vec<char> {
     let start_point = keypad[&start];
     let end_point = keypad[&end];
     let dead_spot = keypad[&'_'];
@@ -101,7 +90,6 @@ fn find_path_v3(start: char, end: char, keypad: &Keypad) -> Vec<char> {
     }
 
     // Moving two directions, check if the dead spot is one of the corners.
-
     let vert_corner_row = (start_point.row as isize + delta_v) as usize;
     let horz_corner_col = (start_point.col as isize + delta_h) as usize;
 
