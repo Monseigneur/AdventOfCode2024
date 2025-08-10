@@ -116,7 +116,8 @@ Day 21:
     - Start 2025-1-5 3:36pm
     - part1: 2025-8-10 12:19pm [270084, 177.1us] (23081), came back to this problem 8-3, but only created an algorithm from
       empirical testing.
-    - part2:
+    - part2: 2025-8-10 4:20pm [329431019997766, 4.889ms] (19591), part 1 solution didn't work for part 2 because of scale, but
+      learned more on reddit how it's a caching thing and implemented it like that.
 
 Day 22:
     - Start 2025-1-6 9:02pm

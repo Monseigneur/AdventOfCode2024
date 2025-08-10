@@ -46,7 +46,12 @@ fn build_button_map(keypad_layout: &str) -> Keypad {
     button_map
 }
 
-fn find_shortest_input(code: &[char], numeric_keypad: &Keypad, robot_keypad: &Keypad, num_robots: usize) -> usize {
+fn find_shortest_input(
+    code: &[char],
+    numeric_keypad: &Keypad,
+    robot_keypad: &Keypad,
+    num_robots: usize,
+) -> usize {
     let mut path = process_keypad(code, &numeric_keypad);
 
     for _ in 0..(num_robots - 1) {
@@ -60,7 +65,7 @@ fn process_keypad(input_path: &[char], keypad: &Keypad) -> Vec<char> {
     let mut new_path = vec![];
 
     for i in 0..input_path.len() {
-        let first_key = if i == 0  { 'A' } else { input_path[i - 1] };
+        let first_key = if i == 0 { 'A' } else { input_path[i - 1] };
         let second_key = input_path[i];
 
         let path = find_path(first_key, second_key, &keypad);
@@ -132,8 +137,7 @@ fn find_path(start: char, end: char, keypad: &Keypad) -> Vec<char> {
     path
 }
 
-fn fill_path(current_path: &mut Vec<char>, amount: isize, is_horizontal: bool)
-{
+fn fill_path(current_path: &mut Vec<char>, amount: isize, is_horizontal: bool) {
     let c = match (amount > 0, is_horizontal) {
         (true, true) => '>',
         (false, true) => '<',
@@ -160,8 +164,77 @@ fn calculate_complexity_code(code: &[char], input_length: usize) -> usize {
     numeric_value * input_length
 }
 
-fn part_2(_contents: &str) -> usize {
-    0
+fn part_2(contents: &str) -> usize {
+    let codes = parse_input(contents);
+
+    let (numeric_keypad, robot_keypad) = build_keypad_maps();
+
+    codes
+        .iter()
+        .map(|code| {
+            let input_length = find_shortest_input_v2(code, &numeric_keypad, &robot_keypad, 26);
+            calculate_complexity_code(code, input_length)
+        })
+        .sum()
+}
+
+fn find_shortest_input_v2(
+    code: &[char],
+    numeric_keypad: &Keypad,
+    robot_keypad: &Keypad,
+    num_robots: usize,
+) -> usize {
+    let mut path_map = HashMap::new();
+
+    let path = process_keypad_v2(&code.iter().collect::<String>(), &numeric_keypad);
+
+    for path_piece in path {
+        update_map(&mut path_map, path_piece, 1);
+    }
+
+    for _ in 0..(num_robots - 1) {
+        let mut new_path_map = HashMap::new();
+
+        for (path_piece, count) in path_map {
+            let new_path = process_keypad_v2(&path_piece, &robot_keypad);
+
+            for new_path_piece in new_path {
+                update_map(&mut new_path_map, new_path_piece, count);
+            }
+        }
+
+        path_map = new_path_map
+    }
+
+    path_map
+        .iter()
+        .map(|(path_piece, count)| path_piece.len() * count)
+        .sum()
+}
+
+fn process_keypad_v2(input_path: &String, keypad: &Keypad) -> Vec<String> {
+    let mut new_path = vec![];
+
+    let actions = input_path.chars().collect::<Vec<char>>();
+
+    for i in 0..actions.len() {
+        let first_key = if i == 0 { 'A' } else { actions[i - 1] };
+        let second_key = actions[i];
+
+        let mut path = find_path(first_key, second_key, &keypad);
+
+        path.push('A');
+
+        new_path.push(path.iter().collect::<String>());
+    }
+
+    new_path
+}
+
+fn update_map(map: &mut HashMap<String, usize>, path_piece: String, count: usize) {
+    map.entry(path_piece)
+        .and_modify(|val| *val += count)
+        .or_insert(count);
 }
 
 #[cfg(test)]
@@ -183,16 +256,9 @@ mod tests {
     }
 
     #[test]
-    fn test_example_part_2() {
-        let contents = utilities::read_file_data(DAY, "example.txt");
-
-        assert_eq!(part_2(&contents), 0);
-    }
-
-    #[test]
     fn test_input_part_2() {
         let contents = utilities::read_file_data(DAY, "input.txt");
 
-        assert_eq!(part_2(&contents), 0);
+        assert_eq!(part_2(&contents), 329431019997766);
     }
 }
