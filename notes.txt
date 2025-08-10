@@ -114,7 +114,8 @@ Day 20:
 
 Day 21:
     - Start 2025-1-5 3:36pm
-    - part1:
+    - part1: 2025-8-10 12:19pm [270084, 177.1us] (23081), came back to this problem 8-3, but only created an algorithm from
+      empirical testing.
     - part2:
 
 Day 22:
